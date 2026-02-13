@@ -1,0 +1,14 @@
+# env
+.env
+.env.local
+
+# dependencies
+node_modules/
+
+# next.js build
+.next/
+out/
+
+# misc
+.DS_Store
+
