@@ -34,8 +34,8 @@ export function StoryViewer({
             </div>
 
             {/* Text Subtitle Box */}
-            <div className="bg-white/90 backdrop-blur-md rounded-2xl p-6 shadow-lg">
-                <p className="text-lg md:text-xl text-center leading-relaxed text-foreground">
+            <div className="bg-white/90 backdrop-blur-md rounded-2xl p-8 shadow-lg">
+                <p className="text-xl md:text-2xl text-center leading-relaxed text-foreground font-medium">
                     {scene.text}
                 </p>
             </div>

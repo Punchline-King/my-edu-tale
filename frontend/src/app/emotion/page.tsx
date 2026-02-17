@@ -35,9 +35,8 @@ export default function EmotionPage() {
         setGameSession(gameSession);
 
         if (childInfo) {
-            const storyId = generateStoryId(childInfo, emotion, stage);
-            setCurrentStoryId(storyId);
-            router.push(`/story/${storyId}`);
+            // Navigate to loading page with query params for backend API call
+            router.push(`/loading?emotion=${emotion}&stage=${stage}`);
         } else {
             alert("아이 정보를 먼저 입력해주세요!");
             router.push("/child-info");

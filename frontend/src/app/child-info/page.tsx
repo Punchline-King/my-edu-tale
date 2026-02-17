@@ -8,10 +8,13 @@ import { useUserStore } from "@/store/userStore";
 import { UserCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { MBTI_TYPES } from "@/lib/types";
+import { saveUserProfile } from "@/services/profileService";
+import { supabase } from "@/lib/supabase";
 
 export default function ChildInfoPage() {
     const router = useRouter();
     const setChildInfo = useUserStore((state) => state.setChildInfo);
+    const [isLoading, setIsLoading] = useState(false);
 
     const [formData, setFormData] = useState({
         child_name: "",
@@ -20,10 +23,30 @@ export default function ChildInfoPage() {
         personality: "ENFP",
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setChildInfo(formData);
-        router.push("/stage-select");
+        setIsLoading(true);
+
+        try {
+            // Save to Zustand store
+            setChildInfo(formData);
+
+            // Save to Supabase if user is authenticated
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                console.log('Saving profile to Supabase for user:', user.id);
+                await saveUserProfile(user.id, formData);
+            }
+
+            // Navigate to stage select
+            router.push("/stage-select");
+        } catch (error) {
+            console.error('Error saving profile:', error);
+            alert('프로필 저장 중 오류가 발생했습니다. 계속 진행합니다.');
+            router.push("/stage-select");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -85,8 +108,8 @@ export default function ChildInfoPage() {
                             <label className="block text-sm font-medium mb-2">
                                 성별 <span className="text-danger">*</span>
                             </label>
-                            <div className="grid grid-cols-3 gap-3">
-                                {["male", "female", "other"].map((gender) => (
+                            <div className="grid grid-cols-2 gap-3">
+                                {["male", "female"].map((gender) => (
                                     <button
                                         key={gender}
                                         type="button"
@@ -104,7 +127,7 @@ export default function ChildInfoPage() {
                                             }
                     `}
                                     >
-                                        {gender === "male" ? "남자" : gender === "female" ? "여자" : "기타"}
+                                        {gender === "male" ? "남자" : "여자"}
                                     </button>
                                 ))}
                             </div>
@@ -136,8 +159,9 @@ export default function ChildInfoPage() {
                             variant="primary"
                             size="lg"
                             className="w-full mt-8"
+                            disabled={isLoading}
                         >
-                            다음 단계로 🎯
+                            {isLoading ? '저장 중...' : '다음 단계로 🎯'}
                         </Button>
                     </form>
                 </Card>

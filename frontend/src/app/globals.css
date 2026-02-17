@@ -167,3 +167,70 @@ body {
 .preserve-3d {
   transform-style: preserve-3d;
 }
+
+/* ===== React-PageFlip Styles ===== */
+.demo-book {
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  margin: 0 auto;
+}
+
+.story-page {
+  position: relative;
+  background: linear-gradient(to bottom right, #ffffff, #f9fafb);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+  height: 100%;
+  width: 100%;
+}
+
+.stf__wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+.stf__parent {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  transform-style: preserve-3d;
+}
+
+.stf__block {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: block;
+  perspective: 2000px;
+}
+
+.stf__item {
+  position: absolute;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.stf__outerShadow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.stf__hardShadow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0) 10%);
+}
+
+.stf__hardInnerShadow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0) 10%);
+}

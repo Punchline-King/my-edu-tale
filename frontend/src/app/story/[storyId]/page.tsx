@@ -4,7 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { FullscreenToggle } from "@/components/ui/FullscreenToggle";
-import { PageFlip } from "@/components/StoryPlayer/PageFlip";
+import { BookPageFlip } from "@/components/StoryPlayer/PageFlip";
 import { StoryViewer } from "@/components/StoryPlayer/StoryViewer";
 import { AudioPlayer } from "@/components/StoryPlayer/AudioPlayer";
 import { QuizModal } from "@/components/StoryPlayer/QuizModal";
@@ -25,7 +25,6 @@ export default function StoryPage({
     const markStageComplete = useUserStore((state) => state.markStageComplete);
 
     const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
-    const [direction, setDirection] = useState(1);
     const [showQuiz, setShowQuiz] = useState(false);
     const [quizCompleted, setQuizCompleted] = useState(false);
     const [showStageClear, setShowStageClear] = useState(false);
@@ -62,19 +61,17 @@ export default function StoryPage({
                 markStageComplete(gameSession.stage);
             }
         } else {
-            setDirection(1);
             setCurrentSceneIndex((prev) => prev + 1);
-            setQuizCompleted(false);
         }
     };
 
     const handlePrevious = () => {
         if (!isFirstScene) {
-            setDirection(-1);
             setCurrentSceneIndex((prev) => prev - 1);
-            setQuizCompleted(false);
         }
     };
+
+
 
     const handleQuizComplete = () => {
         setQuizCompleted(true);
@@ -157,10 +154,10 @@ export default function StoryPage({
     }
 
     return (
-        <div className="min-h-screen p-4 md:p-8">
+        <div className="min-h-screen flex flex-col items-center justify-start p-4 md:p-8">
             <FullscreenToggle />
 
-            <div className="max-w-5xl mx-auto">
+            <div className="w-full max-w-5xl">
                 {/* Story Title */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
@@ -172,23 +169,31 @@ export default function StoryPage({
                 </motion.div>
 
                 {/* Story Content with Page Flip */}
-                <PageFlip direction={direction} sceneKey={currentSceneIndex}>
-                    <div className="space-y-6">
-                        <StoryViewer
-                            scene={currentScene}
-                            currentSceneIndex={currentSceneIndex}
-                            totalScenes={story.scenes.length}
-                        />
-
-                        {/* Audio Player */}
-                        {currentScene.audio_url && (
-                            <AudioPlayer
-                                audioUrl={currentScene.audio_url}
-                                autoPlay={true}
+                <BookPageFlip
+                    currentPage={currentSceneIndex}
+                    onPageChange={setCurrentSceneIndex}
+                >
+                    {story.scenes.map((scene, index) => (
+                        <div key={index} className="space-y-6">
+                            <StoryViewer
+                                scene={scene}
+                                currentSceneIndex={index}
+                                totalScenes={story.scenes.length}
                             />
-                        )}
-                    </div>
-                </PageFlip>
+
+                            {/* Audio Player */}
+                            {scene.audio_url && (
+                                <div className="mt-4">
+                                    <AudioPlayer
+                                        audioUrl={scene.audio_url}
+                                        autoPlay={index === currentSceneIndex}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </BookPageFlip>
+
 
                 {/* Navigation Controls */}
                 <div className="flex justify-between items-center mt-8 gap-4">
@@ -221,13 +226,15 @@ export default function StoryPage({
             </div>
 
             {/* Quiz Modal */}
-            {currentScene.quiz && (
-                <QuizModal
-                    quiz={currentScene.quiz}
-                    isOpen={showQuiz}
-                    onComplete={handleQuizComplete}
-                />
-            )}
-        </div>
+            {
+                currentScene.quiz && (
+                    <QuizModal
+                        quiz={currentScene.quiz}
+                        isOpen={showQuiz}
+                        onComplete={handleQuizComplete}
+                    />
+                )
+            }
+        </div >
     );
 }

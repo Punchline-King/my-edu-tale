@@ -280,11 +280,25 @@ export function getMockStory(
 // Get mock stages for stage selection
 export function getMockStages() {
     return [
-        { id: "1-1-1", name: "첫 번째 모험", chapter: "1-1", locked: false },
-        { id: "1-1-2", name: "두 번째 도전", chapter: "1-1", locked: false },
-        { id: "1-2-1", name: "새로운 세계", chapter: "1-2", locked: false },
-        { id: "1-2-2", name: "숨겨진 보물", chapter: "1-2", locked: false },
-        { id: "2-1-1", name: "용감한 시작", chapter: "2-1", locked: true },
-        { id: "2-1-2", name: "마법의 숲", chapter: "2-1", locked: true },
+        { id: "1-1-1", name: "9까지의 수", chapter: "챕터 1-1", locked: false },
+        { id: "1-1-2", name: "여러가지 모양", chapter: "챕터 1-1", locked: false },
+        { id: "1-1-3", name: "덧셈과 뺄셈", chapter: "챕터 1-1", locked: false },
+        { id: "1-1-4", name: "비교하기", chapter: "챕터 1-1", locked: false },
+        { id: "1-2-1", name: "100까지의 수", chapter: "챕터 1-2", locked: false },
+        { id: "1-2-2", name: "덧셈과 뺄셈", chapter: "챕터 1-2", locked: false },
+        { id: "1-2-3", name: "모양과 시각", chapter: "챕터 1-2", locked: false },
+        { id: "1-2-4", name: "덧셈과 뺄셈", chapter: "챕터 1-2", locked: false },
+        { id: "2-1-1", name: "세 자리 수", chapter: "챕터 2-1", locked: false },
+        { id: "2-1-2", name: "여러 가지 도형", chapter: "챕터 2-1", locked: false },
+        { id: "2-1-3", name: "덧셈과 뺄셈", chapter: "챕터 2-1", locked: false },
+        { id: "2-1-4", name: "길이 재기", chapter: "챕터 2-1", locked: false },
+        { id: "2-1-5", name: "분류하기", chapter: "챕터 2-1", locked: false },
+        { id: "2-1-6", name: "곱셈", chapter: "챕터 2-1", locked: false },
+        { id: "2-2-1", name: "네 자리 수", chapter: "챕터 2-2", locked: false },
+        { id: "2-2-2", name: "곱셈구구", chapter: "챕터 2-2", locked: false },
+        { id: "2-2-3", name: "길이 재기", chapter: "챕터 2-2", locked: false },
+        { id: "2-2-4", name: "시각과 시간", chapter: "챕터 2-2", locked: false },
+        { id: "2-2-5", name: "표와 그래프", chapter: "챕터 2-2", locked: false },
+        { id: "2-2-6", name: "규칙 찾기", chapter: "챕터 2-2", locked: false },
     ];
 }

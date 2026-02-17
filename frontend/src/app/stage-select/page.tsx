@@ -16,11 +16,7 @@ export default function StageSelectPage() {
 
     const stages = getMockStages();
 
-    const handleStageClick = (stageId: string, locked: boolean) => {
-        if (locked) {
-            alert("이 스테이지는 아직 잠겨있어요! 이전 스테이지를 먼저 완료하세요.");
-            return;
-        }
+    const handleStageClick = (stageId: string) => {
         router.push(`/emotion?stage=${stageId}`);
     };
 
@@ -49,7 +45,6 @@ export default function StageSelectPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {stages.map((stage, index) => {
                         const isCompleted = completedStages.includes(stage.id);
-                        const isLocked = stage.locked;
 
                         return (
                             <motion.div
@@ -60,42 +55,34 @@ export default function StageSelectPage() {
                             >
                                 <Card
                                     variant={
-                                        isLocked
-                                            ? "default"
-                                            : isCompleted
-                                                ? "mint"
-                                                : index % 3 === 0
-                                                    ? "sky"
-                                                    : index % 3 === 1
-                                                        ? "lemon"
-                                                        : "pink"
+                                        isCompleted
+                                            ? "mint"
+                                            : index % 3 === 0
+                                                ? "sky"
+                                                : index % 3 === 1
+                                                    ? "lemon"
+                                                    : "pink"
                                     }
-                                    className={`relative ${isLocked ? "opacity-60" : ""}`}
-                                    hover={!isLocked}
+                                    hover={true}
                                 >
                                     {/* Status Badge */}
-                                    <div className="absolute top-4 right-4">
-                                        {isLocked ? (
-                                            <div className="bg-gray-500 text-white px-3 py-1 rounded-full text-xs flex items-center gap-1">
-                                                <Lock size={12} />
-                                                잠김
-                                            </div>
-                                        ) : isCompleted ? (
+                                    {isCompleted && (
+                                        <div className="absolute top-4 right-4">
                                             <div className="bg-success text-white px-3 py-1 rounded-full text-xs flex items-center gap-1">
                                                 <Check size={12} />
                                                 완료
                                             </div>
-                                        ) : null}
-                                    </div>
+                                        </div>
+                                    )}
 
                                     {/* Stage Info */}
                                     <div className="text-center mb-6">
                                         <div className="text-5xl mb-4">
-                                            {isLocked ? "🔒" : isCompleted ? "✅" : "🎮"}
+                                            {isCompleted ? "✅" : "🎮"}
                                         </div>
                                         <h3 className="text-xl font-bold mb-1">{stage.name}</h3>
                                         <p className="text-sm text-foreground/60">
-                                            챕터 {stage.chapter}
+                                            {stage.chapter}
                                         </p>
                                     </div>
 
@@ -104,8 +91,7 @@ export default function StageSelectPage() {
                                         variant={isCompleted ? "success" : "primary"}
                                         size="md"
                                         className="w-full"
-                                        onClick={() => handleStageClick(stage.id, isLocked)}
-                                        disabled={isLocked}
+                                        onClick={() => handleStageClick(stage.id)}
                                     >
                                         {isCompleted ? (
                                             <>다시 플레이</>
