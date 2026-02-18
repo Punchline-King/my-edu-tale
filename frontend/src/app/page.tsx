@@ -46,7 +46,8 @@ export default function HomePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="text-center max-w-4xl z-10"
+        className="text-center w-full z-10"
+        style={{ maxWidth: '1200px' }}
       >
         {/* Hero Section */}
         <div className="mb-8 relative inline-block">
@@ -64,12 +65,12 @@ export default function HomePage() {
         </div>
 
         {/* Title */}
-        <h1 className="text-5xl md:text-7xl font-extrabold mb-4 text-gradient-primary tracking-tight shrink-0">
+        <h1 className="text-5xl md:text-7xl font-extrabold text-gradient-primary tracking-tight shrink-0" style={{ marginBottom: '10px' }}>
           My Edu-Tale
         </h1>
 
         {/* Subtitle */}
-        <div className="glass-card rounded-2xl p-6 md:p-8 mb-10 max-w-2xl mx-auto backdrop-blur-xl border-white/40">
+        <div className="glass-card rounded-2xl p-6 md:p-8 w-full mx-auto backdrop-blur-xl border-white/40 text-center" style={{ marginBottom: '80px', maxWidth: '450px', marginLeft: 'auto', marginRight: 'auto' }}>
           <p className="text-xl md:text-2xl text-foreground/80 font-bold mb-2">
             AI 친구와 함께 떠나는 수학 모험!
           </p>
@@ -82,32 +83,18 @@ export default function HomePage() {
         <motion.div
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          style={{ marginTop: '30px' }}
         >
           <Button
             variant="primary"
             size="lg"
             onClick={() => router.push("/login")}
-            className="text-2xl md:text-3xl px-16 py-10 md:px-20 md:py-12 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-r from-primary to-secondary border-none"
+            className="text-3xl md:text-3xl px-16 py-10 md:px-20 md:py-12 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-r from-primary to-secondary border-none" style={{ maxWidth: '450px', width: '100%', marginLeft: 'auto', marginRight: 'auto', height: '100px' }}
           >
             모험 시작하기 🚀
           </Button>
         </motion.div>
 
-        {/* Feature Icons (Small) */}
-        <div className="flex justify-center gap-8 mt-16 opacity-80">
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-3xl bg-white/40 p-3 rounded-full">🎨</span>
-            <span className="text-xs font-semibold text-foreground/60">감정 맞춤</span>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-3xl bg-white/40 p-3 rounded-full">📚</span>
-            <span className="text-xs font-semibold text-foreground/60">나만의 동화</span>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-3xl bg-white/40 p-3 rounded-full">🧩</span>
-            <span className="text-xs font-semibold text-foreground/60">수학 퀴즈</span>
-          </div>
-        </div>
       </motion.div>
     </div>
   );
