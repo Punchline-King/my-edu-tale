@@ -48,7 +48,7 @@ export default function StageSelectPage() {
                 </motion.div>
             </div>
 
-            <div className="max-w-4xl w-full mx-auto relative z-10 flex flex-col justify-center min-h-screen py-10">
+            <div className="max-w-4xl w-full mx-auto relative z-10 flex flex-col min-h-screen pb-10" style={{ paddingTop: '100px' }}>
                 {/* Header */}
                 <div className="text-center mb-10 relative">
                     <motion.div
@@ -56,12 +56,12 @@ export default function StageSelectPage() {
                         animate={{ opacity: 1, y: 0 }}
                         className="inline-block"
                     >
-                        <h1 className="text-3xl md:text-5xl font-extrabold mb-4 text-white drop-shadow-md tracking-wide">
+                        <h1 className="text-5xl md:text-7xl font-extrabold text-white drop-shadow-md tracking-wide" style={{ marginBottom: '15px' }}>
                             모험 지도 🗺️
                         </h1>
-                        <div className="glass-card px-6 py-3 rounded-full inline-block">
+                        <div className="glass-card rounded-full inline-block" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
                             {childInfo && (
-                                <p className="text-base md:text-lg text-gray-700 font-bold">
+                                <p className="text-2xl md:text-4xl text-gray-700 font-bold leading-relaxed">
                                     {childInfo.child_name} 대장님,<br className="md:hidden" /> 어디로 떠날까요?
                                 </p>
                             )}
@@ -70,7 +70,7 @@ export default function StageSelectPage() {
                 </div>
 
                 {/* Map Container */}
-                <div className="relative flex flex-col items-center gap-24 md:gap-40 mt-40">
+                <div className="relative flex flex-col items-center gap-24 md:gap-40" style={{ marginTop: '150px' }}>
 
                     {/* Winding Path SVG (Background) */}
                     <div className="absolute inset-0 w-full h-full pointer-events-none flex justify-center">
@@ -88,7 +88,7 @@ export default function StageSelectPage() {
 
                     {stages.map((stage, index) => {
                         const isCompleted = completedStages.includes(stage.id);
-                        const isLocked = index > 0 && !completedStages.includes(stages[index - 1].id);
+                        const isLocked = false; // Disabled locking feature as per user request
                         const isChapter2 = index >= 8;
 
                         // Theme Colors
