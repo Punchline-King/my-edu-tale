@@ -1,104 +1,139 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { ReactNode, useState, useEffect } from "react";
+import React, { useRef, useImperativeHandle, forwardRef, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 
-interface BookPageFlipProps {
-    children: ReactNode[];
-    currentPage: number;
-    onPageChange: (page: number) => void;
-}
-
-export function BookPageFlip({ children, currentPage, onPageChange }: BookPageFlipProps) {
-    const [direction, setDirection] = useState(1);
-    const [isFlipping, setIsFlipping] = useState(false);
-
-    useEffect(() => {
-        setDirection(currentPage > (currentPage - 1) ? 1 : -1);
-    }, [currentPage]);
-
-    // 3D book flip animation with page curl effect
-    const pageVariants = {
-        enter: (direction: number) => ({
-            rotateY: direction > 0 ? 180 : -180,
-            opacity: 0,
-            x: direction > 0 ? "100%" : "-100%",
-            scale: 0.8,
-            transformOrigin: direction > 0 ? "left center" : "right center",
-        }),
-        center: {
-            rotateY: 0,
-            opacity: 1,
-            x: 0,
-            scale: 1,
-        },
-        exit: (direction: number) => ({
-            rotateY: direction > 0 ? -180 : 180,
-            opacity: 0,
-            x: direction > 0 ? "-100%" : "100%",
-            scale: 0.8,
-            transformOrigin: direction > 0 ? "right center" : "left center",
-        }),
-    };
-
-    return (
-        <div className="relative w-full max-w-4xl mx-auto perspective-[2000px]">
-            {/* Book Container */}
-            <div className="relative bg-gradient-to-br from-amber-50 to-stone-100 rounded-2xl shadow-2xl p-8 md:p-12 preserve-3d">
-                {/* Page Container */}
-                <div className="relative min-h-[600px] overflow-hidden rounded-xl bg-white">
-                    <AnimatePresence initial={false} custom={direction} mode="wait">
-                        <motion.div
-                            key={currentPage}
-                            custom={direction}
-                            variants={pageVariants}
-                            initial="enter"
-                            animate="center"
-                            exit="exit"
-                            transition={{
-                                rotateY: {
-                                    duration: 0.8,
-                                    ease: [0.32, 0.72, 0, 1]
-                                },
-                                opacity: { duration: 0.4 },
-                                x: { duration: 0.8, ease: [0.32, 0.72, 0, 1] },
-                                scale: { duration: 0.8 },
-                            }}
-                            onAnimationStart={() => setIsFlipping(true)}
-                            onAnimationComplete={() => setIsFlipping(false)}
-                            style={{
-                                transformStyle: "preserve-3d",
-                                backfaceVisibility: "hidden",
-                            }}
-                            className="absolute inset-0 p-6 md:p-8"
-                        >
-                            {children[currentPage]}
-                        </motion.div>
-                    </AnimatePresence>
-
-                    {/* Page Shadow Effect */}
-                    {isFlipping && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 0.3 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20 pointer-events-none"
-                        />
-                    )}
-                </div>
-
-                {/* Book Spine Shadow */}
-                <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-stone-400/50 to-transparent" />
-                <div className="absolute right-0 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-stone-400/50 to-transparent" />
-
-                {/* Page Number Indicator */}
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-400 font-medium">
-                    {currentPage + 1} / {children.length}
-                </div>
+// Dynamically import HTMLFlipBook with no SSR - using default export
+const HTMLFlipBookComponent = dynamic(
+    () => import('react-pageflip'),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="flex items-center justify-center min-h-[600px] bg-amber-50 rounded-2xl">
+                <div className="text-lg text-gray-600 animate-pulse">📖 책을 불러오는 중...</div>
             </div>
+        ),
+    }
+) as any;
 
-            {/* Book Stand Effect */}
-            <div className="absolute -bottom-2 left-8 right-8 h-4 bg-gradient-to-b from-stone-300/50 to-transparent rounded-b-3xl blur-sm" />
-        </div>
-    );
+interface PageFlipBookProps {
+    children: React.ReactNode;
+    onPageChange?: (pageIndex: number) => void;
+    width?: number;
+    height?: number;
+    usePortrait?: boolean;
 }
+
+export interface PageFlipBookHandle {
+    flipNext: () => void;
+    flipPrev: () => void;
+    flipToPage: (page: number) => void;
+    getCurrentPage: () => number;
+}
+
+export const PageFlipBook = forwardRef<PageFlipBookHandle, PageFlipBookProps>(
+    ({ children, onPageChange, width = 550, height = 733, usePortrait = false }, ref) => {
+        const bookRef = useRef<any>(null);
+        const [isMounted, setIsMounted] = useState(false);
+
+        useEffect(() => {
+            setIsMounted(true);
+        }, []);
+
+        useImperativeHandle(ref, () => ({
+            flipNext: () => {
+                if (bookRef.current?.pageFlip) {
+                    bookRef.current.pageFlip().flipNext();
+                }
+            },
+            flipPrev: () => {
+                if (bookRef.current?.pageFlip) {
+                    bookRef.current.pageFlip().flipPrev();
+                }
+            },
+            flipToPage: (page: number) => {
+                if (bookRef.current?.pageFlip) {
+                    bookRef.current.pageFlip().flip(page);
+                }
+            },
+            getCurrentPage: () => {
+                if (bookRef.current?.pageFlip) {
+                    return bookRef.current.pageFlip().getCurrentPageIndex();
+                }
+                return 0;
+            },
+        }));
+
+        const handleFlip = (e: any) => {
+            if (onPageChange) {
+                onPageChange(e.data);
+            }
+        };
+
+        if (!isMounted) {
+            return (
+                <div className="flex items-center justify-center min-h-[600px] bg-amber-50 rounded-2xl">
+                    <div className="text-lg text-gray-600">📚 책을 준비하는 중...</div>
+                </div>
+            );
+        }
+
+        return (
+            <div className="flex justify-center items-center w-full bg-gradient-to-br from-amber-50 to-stone-100 rounded-2xl p-1 md:p-4 shadow-2xl">
+                <HTMLFlipBookComponent
+                    ref={bookRef}
+                    width={width}
+                    height={height}
+                    size="fixed"
+                    minWidth={width}
+                    maxWidth={width}
+                    minHeight={height}
+                    maxHeight={height}
+                    drawShadow={true}
+                    flippingTime={800}
+                    usePortrait={usePortrait}
+                    startZIndex={0}
+                    autoSize={false}
+                    maxShadowOpacity={0.5}
+                    showCover={false}
+                    mobileScrollSupport={true}
+                    onFlip={handleFlip}
+                    className="book-flip-container"
+                    style={{
+                        margin: '0 auto',
+                    }}
+                >
+                    {children}
+                </HTMLFlipBookComponent>
+            </div>
+        );
+    }
+);
+
+PageFlipBook.displayName = 'PageFlipBook';
+
+// Page component for individual pages
+interface PageProps {
+    children: React.ReactNode;
+    className?: string;
+}
+
+export const Page = forwardRef<HTMLDivElement, PageProps>(
+    ({ children, className = '' }, ref) => {
+        return (
+            <div
+                ref={ref}
+                className={`page bg-white shadow-xl rounded-lg overflow-auto ${className}`}
+                style={{
+                    padding: '30px',
+                    boxSizing: 'border-box',
+                    height: '100%',
+                }}
+            >
+                {children}
+            </div>
+        );
+    }
+);
+
+Page.displayName = 'Page';

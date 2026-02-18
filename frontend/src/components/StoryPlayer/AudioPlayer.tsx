@@ -80,7 +80,7 @@ export function AudioPlayer({
     };
 
     return (
-        <div className="w-full max-w-md mx-auto">
+        <div className="w-full mx-auto">
             <audio ref={audioRef} src={audioUrl} preload="auto" />
 
             <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 shadow-lg">

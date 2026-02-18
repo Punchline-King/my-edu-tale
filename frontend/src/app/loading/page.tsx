@@ -1,260 +1,138 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useUserStore } from "@/store/userStore";
-import { generateStory, ApiError } from "@/services/apiService";
-import type { GenerateStoryResponse } from "@/services/apiService";
-
-const loadingMessages = [
-    "AI가 그림 그리는 중...",
-    "색칠하는 중...",
-    "이야기를 만드는 중...",
-    "주인공을 그리는 중...",
-    "배경을 꾸미는 중...",
-    "마법을 부리는 중...",
-];
+import React, { useEffect, useState } from "react";
+import { BookOpen, Edit, Paintbrush, Palette, Sparkles } from "lucide-react";
 
 export default function LoadingPage() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const [messageIndex, setMessageIndex] = useState(0);
     const [progress, setProgress] = useState(0);
-    const [error, setError] = useState<string | null>(null);
-    const [isGenerating, setIsGenerating] = useState(false);
+    const [messageIndex, setMessageIndex] = useState(0);
 
-    const childInfo = useUserStore((state) => state.childInfo);
-    const setCurrentStoryId = useUserStore((state) => state.setCurrentStoryId);
-
-    // Get parameters from URL
-    const emotion = searchParams.get("emotion");
-    const stage = searchParams.get("stage");
+    const messages = [
+        "AI가 그림 그리는 중...",
+        "특별한 이야기를 만들고 있어요...",
+        "재미있는 퀴즈를 준비하고 있어요...",
+        "거의 다 되었어요! ✨"
+    ];
 
     useEffect(() => {
-        // Rotate messages every 3 seconds
-        const messageInterval = setInterval(() => {
-            setMessageIndex((prev) => (prev + 1) % loadingMessages.length);
-        }, 3000);
-
-        // Increment progress
-        const progressInterval = setInterval(() => {
+        const interval = setInterval(() => {
             setProgress((prev) => {
-                if (prev >= 100) return 100;
-                return prev + 3; // Slower for backend generation (~20 seconds)
+                if (prev >= 100) {
+                    clearInterval(interval);
+                    return 100;
+                }
+                return prev + 1;
             });
-        }, 600);
+        }, 50);
 
-        return () => {
-            clearInterval(messageInterval);
-            clearInterval(progressInterval);
-        };
+        return () => clearInterval(interval);
     }, []);
 
     useEffect(() => {
-        // Generate story on mount
-        if (!emotion || !stage || !childInfo || isGenerating) {
-            return;
-        }
+        const messageInterval = setInterval(() => {
+            setMessageIndex((prev) => (prev + 1) % messages.length);
+        }, 3000);
 
-        const generateStoryFromBackend = async () => {
-            setIsGenerating(true);
-            setError(null);
-
-            try {
-                // Map stage code (e.g., "1-1-1" to "MATH-001")
-                const stageCode = mapStageToCode(stage);
-
-                const response: GenerateStoryResponse = await generateStory(
-                    {
-                        child_name: childInfo.child_name,
-                        age: parseInt(childInfo.age, 10),
-                        personality: childInfo.personality || "활발함",
-                        emotion: emotion,
-                        stage_code: stageCode,
-                    },
-                    (progressMessage) => {
-                        // Update progress message from backend
-                        console.log("Progress:", progressMessage);
-                    }
-                );
-
-                // Save story ID
-                setCurrentStoryId(response.story_id);
-
-                // Set progress to 100%
-                setProgress(100);
-
-                // Navigate to story page
-                setTimeout(() => {
-                    router.push(`/story/${response.story_id}`);
-                }, 500);
-
-            } catch (err) {
-                console.error("Story generation error:", err);
-
-                if (err instanceof ApiError) {
-                    setError(err.message);
-                } else {
-                    setError("스토리 생성 중 오류가 발생했습니다.");
-                }
-
-                setProgress(0);
-            } finally {
-                setIsGenerating(false);
-            }
-        };
-
-        generateStoryFromBackend();
-    }, [emotion, stage, childInfo, router, setCurrentStoryId, isGenerating]);
-
-    // Map stage code from frontend format to backend format
-    const mapStageToCode = (stageStr: string): string => {
-        // Map "1-1-1" to "MATH-001", "1-1-2" to "MATH-002", etc.
-        // This is a simple mapping, adjust based on your actual stage structure
-        const parts = stageStr.split("-");
-        if (parts.length === 3) {
-            const num = parseInt(parts[2], 10);
-            return `MATH-${String(num).padStart(3, "0")}`;
-        }
-        return "MATH-001"; // Default
-    };
-
-    const handleRetry = () => {
-        window.location.reload();
-    };
-
-    const handleGoBack = () => {
-        router.back();
-    };
+        return () => clearInterval(messageInterval);
+    }, []);
 
     return (
-        <div className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden">
-            {/* Mesh Gradient Background */}
-            <div
-                className="absolute inset-0"
-                style={{
-                    backgroundColor: "#FFE5D9",
-                    backgroundImage: `
-                        radial-gradient(at 0% 0%, #B4E4FF 0px, transparent 50%),
-                        radial-gradient(at 100% 0%, #E5C1FF 0px, transparent 50%),
-                        radial-gradient(at 100% 100%, #FFE5D9 0px, transparent 50%),
-                        radial-gradient(at 0% 100%, #B4E4FF 0px, transparent 50%)
-                    `,
-                }}
-            />
-
-            {/* Top Header */}
-            <header className="fixed top-0 left-0 w-full flex items-center justify-between px-10 py-6 z-10">
+        <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-pastel-mesh overflow-hidden font-sans text-[#111418]">
+            {/* Top Navigation */}
+            <header className="fixed top-0 left-0 w-full flex items-center justify-between px-6 md:px-10 py-6 z-10">
                 <div className="flex items-center gap-3">
-                    <div className="size-8 bg-white/40 backdrop-blur-md rounded-lg flex items-center justify-center text-primary shadow-sm">
-                        <span className="text-2xl">📖</span>
+                    <div className="size-10 bg-white/40 backdrop-blur-md rounded-xl flex items-center justify-center text-primary shadow-sm border border-white/20">
+                        <BookOpen size={24} />
                     </div>
-                    <h2 className="text-[#111418] text-lg font-bold leading-tight tracking-tight">
-                        Story AI
-                    </h2>
+                    <h2 className="text-lg font-bold leading-tight tracking-tight">Story AI</h2>
                 </div>
                 <div className="flex items-center gap-6">
-                    <div className="bg-white/40 backdrop-blur-md rounded-full px-4 py-1.5 flex items-center gap-2 border border-white/20">
-                        <span className={`size-2 rounded-full ${error ? 'bg-red-400' : 'bg-green-400 animate-pulse'}`} />
-                        <span className="text-xs font-semibold text-[#111418]/70 uppercase tracking-widest">
-                            {error ? "Error" : "Processing"}
-                        </span>
+                    <div className="bg-white/40 backdrop-blur-md rounded-full px-4 py-1.5 flex items-center gap-2 border border-white/20 shadow-sm">
+                        <span className="size-2 rounded-full bg-green-400 animate-pulse"></span>
+                        <span className="text-xs font-bold text-[#111418]/70 uppercase tracking-widest">Processing</span>
                     </div>
                 </div>
             </header>
 
             {/* Main Loading Content */}
-            <main className="flex flex-col items-center justify-center px-4 text-center max-w-2xl w-full z-10">
-                {error ? (
-                    /* Error State */
-                    <div className="space-y-6">
-                        <div className="text-6xl mb-4">❌</div>
-                        <h2 className="text-2xl font-bold text-[#111418]">
-                            오류가 발생했습니다
-                        </h2>
-                        <p className="text-[#111418]/70 text-sm max-w-md">
-                            {error}
-                        </p>
-                        <div className="flex gap-4 justify-center">
-                            <button
-                                onClick={handleRetry}
-                                className="px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors"
-                            >
-                                다시 시도
-                            </button>
-                            <button
-                                onClick={handleGoBack}
-                                className="px-6 py-3 bg-white/40 backdrop-blur-md text-[#111418] rounded-lg font-semibold hover:bg-white/60 transition-colors"
-                            >
-                                뒤로 가기
-                            </button>
+            <main className="flex flex-col items-center justify-center px-4 text-center w-full z-10">
+                {/* Central Animation Container */}
+                <div className="relative size-80 mb-12 flex items-center justify-center">
+                    {/* Glowing Background Ring */}
+                    <div className="absolute inset-0 rounded-full border-4 border-white/30 border-t-[#137fec]/40 animate-[spin_3s_linear_infinite] shadow-[0_0_40px_rgba(19,127,236,0.15)]"></div>
+
+                    {/* Inner Rotating Tools Layer */}
+                    <div className="relative size-full flex items-center justify-center animate-float">
+                        {/* Art Tool 1: Pencils (Top Left) - Rounded Square */}
+                        <div className="absolute -top-4 -left-4 size-32 bg-pastel-peach rounded-2xl rotate-[-15deg] shadow-xl flex items-center justify-center border-4 border-white transform transition-transform hover:scale-105">
+                            <Edit size={48} className="text-orange-400/80" />
                         </div>
+
+                        {/* Art Tool 2: Paintbrush (Center Focus) - Circle */}
+                        <div className="z-20 size-40 bg-white rounded-full shadow-2xl flex items-center justify-center border-8 border-white group relative">
+                            <div className="size-full rounded-full bg-gradient-to-br from-pastel-blue via-white to-pastel-purple flex items-center justify-center overflow-hidden">
+                                <div className="flex flex-col items-center gap-2 transform group-hover:scale-110 transition-transform duration-500">
+                                    <Paintbrush size={72} className="text-[#137fec]" />
+                                    <div className="flex gap-1 mt-2">
+                                        <div className="size-1.5 bg-pastel-peach rounded-full animate-bounce"></div>
+                                        <div className="size-1.5 bg-pastel-blue rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                                        <div className="size-1.5 bg-pastel-purple rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Art Tool 3: Palette (Bottom Right) - Rounded Squircle */}
+                        <div className="absolute -bottom-6 -right-6 size-32 bg-pastel-purple rounded-3xl rotate-[20deg] shadow-xl flex items-center justify-center border-4 border-white transform transition-transform hover:scale-105">
+                            <Palette size={48} className="text-purple-500/80" />
+                        </div>
+
+                        {/* Stardust Particles (Floating Orbs) */}
+                        <div className="absolute top-0 right-10 size-4 bg-white rounded-full blur-[1px] animate-pulse shadow-glow-white"></div>
+                        <div className="absolute bottom-10 left-0 size-3 bg-white/80 rounded-full blur-[1px] animate-pulse [animation-delay:0.5s] shadow-glow-white"></div>
+                        <div className="absolute top-20 -right-5 size-2 bg-white/60 rounded-full blur-[1px] animate-pulse [animation-delay:1s] shadow-glow-white"></div>
                     </div>
-                ) : (
-                    /* Loading State */
-                    <>
-                        {/* Central Animation Container */}
-                        <div className="relative w-64 h-64 md:w-80 md:h-80 mb-12 flex items-center justify-center">
-                            {/* Glowing Background Ring */}
-                            <div className="absolute inset-0 rounded-full border-4 border-white/30 border-t-primary/40 animate-spin shadow-[0_0_40px_rgba(19,127,236,0.15)]" />
+                </div>
 
-                            {/* Floating Art Tools */}
-                            <div className="absolute inset-0 animate-[spin_20s_linear_infinite]">
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 bg-white/60 backdrop-blur-sm rounded-full p-3 shadow-lg">
-                                    🎨
-                                </div>
-                            </div>
-                            <div className="absolute inset-0 animate-[spin_15s_linear_infinite_reverse]">
-                                <div className="absolute top-1/2 right-0 translate-x-4 -translate-y-1/2 bg-white/60 backdrop-blur-sm rounded-full p-3 shadow-lg">
-                                    ✏️
-                                </div>
-                            </div>
-                            <div className="absolute inset-0 animate-[spin_18s_linear_infinite]">
-                                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-4 bg-white/60 backdrop-blur-sm rounded-full p-3 shadow-lg">
-                                    🖌️
-                                </div>
-                            </div>
-                            <div className="absolute inset-0 animate-[spin_22s_linear_infinite_reverse]">
-                                <div className="absolute top-1/2 left-0 -translate-x-4 -translate-y-1/2 bg-white/60 backdrop-blur-sm rounded-full p-3 shadow-lg">
-                                    📐
-                                </div>
-                            </div>
+                {/* Text Content */}
+                <div className="space-y-4 relative z-10 w-full flex flex-col items-center">
+                    <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight px-4 leading-[1.2] text-gray-900 drop-shadow-sm min-h-[60px] transition-all duration-300">
+                        {messages[messageIndex]}
+                    </h1>
+                    <p className="text-gray-600 text-lg md:text-xl font-medium px-4">
+                        잠시만 기다려주세요 ✨
+                    </p>
 
-                            {/* Center Icon */}
-                            <div className="relative z-10 bg-white/80 backdrop-blur-md rounded-full size-24 md:size-32 flex items-center justify-center shadow-xl">
-                                <span className="text-5xl md:text-6xl">🤖</span>
-                            </div>
+                    {/* Progress Bar Section */}
+                    <div className="mt-12 w-full max-w-sm mx-auto space-y-3">
+                        <div className="flex justify-between items-end px-1">
+                            <span className="text-[#137fec] font-bold text-xs md:text-sm tracking-wider">CREATING MAGIC</span>
+                            <span className="text-gray-800 font-bold text-xs md:text-sm">{progress}%</span>
                         </div>
-
-                        {/* Loading Message */}
-                        <h1 className="text-3xl md:text-4xl font-extrabold text-[#111418] mb-4 animate-pulse">
-                            {loadingMessages[messageIndex]}
-                        </h1>
-
-                        <p className="text-[#111418]/60 text-sm md:text-base mb-10 max-w-md">
-                            AI가 {childInfo?.child_name}님을 위한 특별한 동화를 만들고 있어요
-                        </p>
-
-                        {/* Progress Bar */}
-                        <div className="w-full max-w-md">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs font-semibold text-[#111418]/50 uppercase tracking-widest">
-                                    Progress
-                                </span>
-                                <span className="text-sm font-bold text-[#111418]">
-                                    {Math.min(progress, 100)}%
-                                </span>
-                            </div>
-                            <div className="h-2 bg-white/30 rounded-full overflow-hidden backdrop-blur-sm">
-                                <div
-                                    className="h-full bg-gradient-to-r from-primary to-primary/60 transition-all duration-500 ease-out rounded-full"
-                                    style={{ width: `${Math.min(progress, 100)}%` }}
-                                />
-                            </div>
+                        <div className="h-4 w-full bg-white/40 backdrop-blur-sm rounded-full overflow-hidden p-1 border border-white/30 shadow-inner">
+                            <div
+                                className="h-full bg-[#137fec] rounded-full shadow-[0_0_10px_rgba(19,127,236,0.3)] transition-all duration-300 ease-out"
+                                style={{ width: `${progress}%` }}
+                            ></div>
                         </div>
-                    </>
-                )}
+                        <p className="text-gray-400 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]">Almost ready to show you</p>
+                    </div>
+                </div>
             </main>
+
+            {/* Footer Caption */}
+            <footer className="fixed bottom-8 md:bottom-12 w-full text-center px-6 z-10 flex justify-center">
+                <div className="inline-flex items-center gap-2 bg-white/30 backdrop-blur-lg px-6 py-3 rounded-full border border-white/40 shadow-lg">
+                    <Sparkles size={20} className="text-primary" />
+                    <p className="text-gray-800 font-semibold text-sm md:text-base">
+                        특별한 이야기를 만들고 있어요 🎨
+                    </p>
+                </div>
+            </footer>
+
+            {/* Background Decorative Elements */}
+            <div className="fixed top-1/4 -left-20 size-80 bg-pastel-blue/30 rounded-full blur-[100px] pointer-events-none"></div>
+            <div className="fixed bottom-1/4 -right-20 size-80 bg-pastel-purple/30 rounded-full blur-[100px] pointer-events-none"></div>
         </div>
     );
 }

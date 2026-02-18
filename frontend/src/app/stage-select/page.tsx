@@ -2,11 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { FullscreenToggle } from "@/components/ui/FullscreenToggle";
 import { useUserStore } from "@/store/userStore";
 import { getMockStages } from "@/lib/mockData";
-import { Lock, Check, Play } from "lucide-react";
+import { Lock, Check, Play, Star } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function StageSelectPage() {
@@ -21,88 +20,145 @@ export default function StageSelectPage() {
     };
 
     return (
-        <div className="min-h-screen p-4 md:p-8">
+        <div className="min-h-screen bg-pastel-mesh relative overflow-x-hidden p-4 flex flex-col items-center justify-center">
             <FullscreenToggle />
 
-            <div className="max-w-6xl mx-auto">
+            {/* Background Clouds */}
+            <div className="absolute inset-0 pointer-events-none">
+                <motion.div
+                    animate={{ x: [0, 50, 0] }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    className="absolute top-20 left-10 text-8xl opacity-40 blur-sm"
+                >
+                    ☁️
+                </motion.div>
+                <motion.div
+                    animate={{ x: [0, -50, 0] }}
+                    transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                    className="absolute top-1/3 right-10 text-9xl opacity-30 blur-md"
+                >
+                    ☁️
+                </motion.div>
+                <motion.div
+                    animate={{ y: [0, -30, 0] }}
+                    transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute bottom-20 left-1/4 text-6xl opacity-40"
+                >
+                    🎈
+                </motion.div>
+            </div>
+
+            <div className="max-w-4xl w-full mx-auto relative z-10 flex flex-col justify-center min-h-screen py-10">
                 {/* Header */}
-                <div className="text-center mb-12">
-                    <motion.h1
+                <div className="text-center mb-10 relative">
+                    <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-4xl md:text-5xl font-bold mb-4"
+                        className="inline-block"
                     >
-                        스테이지를 선택하세요! 🗺️
-                    </motion.h1>
-                    {childInfo && (
-                        <p className="text-lg text-foreground/70">
-                            {childInfo.child_name}님, 어느 모험을 시작할까요?
-                        </p>
-                    )}
+                        <h1 className="text-3xl md:text-5xl font-extrabold mb-4 text-white drop-shadow-md tracking-wide">
+                            모험 지도 🗺️
+                        </h1>
+                        <div className="glass-card px-6 py-3 rounded-full inline-block">
+                            {childInfo && (
+                                <p className="text-base md:text-lg text-gray-700 font-bold">
+                                    {childInfo.child_name} 대장님,<br className="md:hidden" /> 어디로 떠날까요?
+                                </p>
+                            )}
+                        </div>
+                    </motion.div>
                 </div>
 
-                {/* Stage Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Map Container */}
+                <div className="relative flex flex-col items-center gap-24 md:gap-40 mt-40">
+
+                    {/* Winding Path SVG (Background) */}
+                    <div className="absolute inset-0 w-full h-full pointer-events-none flex justify-center">
+                        <svg className="w-full h-full max-w-md opacity-30" viewBox="0 0 100 2000" preserveAspectRatio="none">
+                            {/* Simple S-curve approximation - extended for longer list */}
+                            <path
+                                d="M50,0 Q90,200 50,400 T50,800 T50,1200 T50,1600"
+                                fill="none"
+                                stroke="white"
+                                strokeWidth="4"
+                                strokeDasharray="10 10"
+                            />
+                        </svg>
+                    </div>
+
                     {stages.map((stage, index) => {
                         const isCompleted = completedStages.includes(stage.id);
+                        const isLocked = index > 0 && !completedStages.includes(stages[index - 1].id);
+                        const isChapter2 = index >= 8;
+
+                        // Theme Colors
+                        const borderColor = isChapter2 ? "border-purple-200" : "border-blue-200";
+                        const badgeColor = isChapter2 ? "bg-purple-400" : "bg-blue-400";
+                        const dotsColor = isChapter2 ? "bg-purple-300" : "bg-blue-300";
 
                         return (
                             <motion.div
                                 key={stage.id}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: index * 0.1 }}
+                                initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                transition={{ delay: index * 0.2 }}
+                                className={`relative z-10 ${index % 2 === 0 ? 'translate-x-0 md:-translate-x-32' : 'translate-x-0 md:translate-x-32'}`}
                             >
-                                <Card
-                                    variant={
-                                        isCompleted
-                                            ? "mint"
-                                            : index % 3 === 0
-                                                ? "sky"
-                                                : index % 3 === 1
-                                                    ? "lemon"
-                                                    : "pink"
-                                    }
-                                    hover={true}
+                                <motion.div
+                                    whileHover={!isLocked ? { y: -10, scale: 1.05 } : {}}
+                                    className="relative group"
                                 >
-                                    {/* Status Badge */}
-                                    {isCompleted && (
-                                        <div className="absolute top-4 right-4">
-                                            <div className="bg-success text-white px-3 py-1 rounded-full text-xs flex items-center gap-1">
-                                                <Check size={12} />
-                                                완료
+                                    {/* Island Base */}
+                                    <div className={`
+                                        w-64 md:w-72 p-6 rounded-[2rem] text-center transition-all duration-300
+                                        ${isLocked
+                                            ? "bg-gray-200/50 backdrop-blur-sm border-2 border-white/30"
+                                            : `bg-white/80 backdrop-blur-md shadow-xl border-4 ${borderColor}`
+                                        }
+                                    `}>
+                                        {/* Stage Badge */}
+                                        <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+                                            <div className={`
+                                                w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-md border-4 border-white text-white font-bold
+                                                ${isLocked ? 'bg-gray-400' : badgeColor}
+                                            `}>
+                                                {index + 1}
                                             </div>
                                         </div>
-                                    )}
 
-                                    {/* Stage Info */}
-                                    <div className="text-center mb-6">
-                                        <div className="text-5xl mb-4">
-                                            {isCompleted ? "✅" : "🎮"}
+                                        <div className="mt-6 mb-4">
+                                            <div className="text-4xl mb-2">{isLocked ? "🔒" : "🏝️"}</div>
+                                            <h3 className={`text-xl font-bold mb-1 ${isLocked ? 'text-gray-400' : 'text-gray-800'}`}>
+                                                {stage.name}
+                                            </h3>
+                                            <p className={`text-sm ${isLocked ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                {stage.chapter}
+                                            </p>
                                         </div>
-                                        <h3 className="text-xl font-bold mb-1">{stage.name}</h3>
-                                        <p className="text-sm text-foreground/60">
-                                            {stage.chapter}
-                                        </p>
+
+                                        <Button
+                                            variant={isChapter2 ? "secondary" : "primary"}
+                                            size="md"
+                                            className={`
+                                                w-full rounded-xl shadow-md font-bold
+                                                ${isLocked ? '!bg-gray-300 pointer-events-none text-gray-500' : 'text-white'}
+                                            `}
+                                            onClick={() => handleStageClick(stage.id)}
+                                            disabled={isLocked}
+                                        >
+                                            모험 시작
+                                        </Button>
                                     </div>
 
-                                    {/* Action Button */}
-                                    <Button
-                                        variant={isCompleted ? "success" : "primary"}
-                                        size="md"
-                                        className="w-full"
-                                        onClick={() => handleStageClick(stage.id)}
-                                    >
-                                        {isCompleted ? (
-                                            <>다시 플레이</>
-                                        ) : (
-                                            <>
-                                                <Play size={18} className="mr-2" />
-                                                시작하기
-                                            </>
-                                        )}
-                                    </Button>
-                                </Card>
+                                    {/* Decorative dots underneath island to simulate floating */}
+                                    {!isLocked && (
+                                        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex gap-2 opacity-50">
+                                            <div className={`w-2 h-2 rounded-full animate-bounce ${dotsColor}`} style={{ animationDelay: '0s' }} />
+                                            <div className={`w-2 h-2 rounded-full animate-bounce ${dotsColor}`} style={{ animationDelay: '0.2s' }} />
+                                            <div className={`w-2 h-2 rounded-full animate-bounce ${dotsColor}`} style={{ animationDelay: '0.4s' }} />
+                                        </div>
+                                    )}
+                                </motion.div>
                             </motion.div>
                         );
                     })}

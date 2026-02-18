@@ -85,7 +85,7 @@ export function getMockStory(
                 {
                     scene_no: 1,
                     text: `${name}이는 오늘 정말 기분이 좋아요! 수학 문제를 풀면서 노래를 불렀어요.`,
-                    image_url: "https://picsum.photos/seed/happy1/800/450",
+                    image_url: "/test_space_panorama.png",
                     audio_url: "/audio/happy1.mp3",
                     quiz: null,
                 },

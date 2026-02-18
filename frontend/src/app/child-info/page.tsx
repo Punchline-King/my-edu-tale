@@ -3,9 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { useUserStore } from "@/store/userStore";
-import { UserCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { MBTI_TYPES } from "@/lib/types";
 import { saveUserProfile } from "@/services/profileService";
@@ -18,7 +16,7 @@ export default function ChildInfoPage() {
 
     const [formData, setFormData] = useState({
         child_name: "",
-        age: "",
+        age: "7",
         gender: "male" as "male" | "female" | "other",
         personality: "ENFP",
     });
@@ -50,122 +48,147 @@ export default function ChildInfoPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="w-full max-w-2xl"
-            >
-                <Card variant="default" hover={false} className="p-8">
-                    <div className="text-center mb-8">
-                        <UserCircle className="w-12 h-12 mx-auto mb-4 text-primary" />
-                        <h1 className="text-3xl font-bold mb-2">아이 정보 입력</h1>
-                        <p className="text-foreground/60">
-                            맞춤형 수학 이야기를 위해 아이의 정보를 알려주세요
-                        </p>
-                    </div>
+        <div className="min-h-screen flex items-center justify-center p-4 bg-pastel-mesh relative overflow-hidden">
+            {/* Background Decoration */}
+            <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-10 right-10 w-20 h-20 bg-yellow-300 rounded-full blur-2xl opacity-50 animate-pulse"></div>
+                <div className="absolute bottom-10 left-10 w-32 h-32 bg-blue-300 rounded-full blur-2xl opacity-50 animate-pulse" style={{ animationDelay: "1s" }}></div>
+            </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Name */}
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                이름 <span className="text-danger">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                value={formData.child_name}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, child_name: e.target.value })
-                                }
-                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none transition-colors"
-                                placeholder="예: 김민준"
-                                required
-                            />
-                        </div>
+            <div className="w-full max-w-4xl flex flex-col md:flex-row items-center gap-8 relative z-10">
 
-                        {/* Age */}
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                나이 <span className="text-danger">*</span>
-                            </label>
-                            <input
-                                type="number"
-                                min="5"
-                                max="10"
-                                value={formData.age}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, age: e.target.value })
-                                }
-                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none transition-colors"
-                                placeholder="예: 7"
-                                required
-                            />
-                        </div>
-
-                        {/* Gender */}
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                성별 <span className="text-danger">*</span>
-                            </label>
-                            <div className="grid grid-cols-2 gap-3">
-                                {["male", "female"].map((gender) => (
-                                    <button
-                                        key={gender}
-                                        type="button"
-                                        onClick={() =>
-                                            setFormData({
-                                                ...formData,
-                                                gender: gender as "male" | "female" | "other",
-                                            })
-                                        }
-                                        className={`
-                      px-4 py-3 rounded-xl border-2 transition-all
-                      ${formData.gender === gender
-                                                ? "border-primary bg-primary text-white"
-                                                : "border-gray-200 hover:border-primary"
-                                            }
-                    `}
-                                    >
-                                        {gender === "male" ? "남자" : "여자"}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* MBTI */}
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                성격 유형 (MBTI) <span className="text-danger">*</span>
-                            </label>
-                            <select
-                                value={formData.personality}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, personality: e.target.value })
-                                }
-                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none transition-colors"
-                                required
-                            >
-                                {MBTI_TYPES.map((mbti) => (
-                                    <option key={mbti} value={mbti}>
-                                        {mbti}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            size="lg"
-                            className="w-full mt-8"
-                            disabled={isLoading}
+                {/* Mascot Guide Section */}
+                <motion.div
+                    initial={{ x: -50, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ duration: 0.6 }}
+                    className="flex-1 text-center md:text-right"
+                >
+                    <div className="inline-block relative">
+                        <motion.div
+                            animate={{ y: [0, -10, 0] }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                            className="text-[120px] md:text-[150px] drop-shadow-2xl"
                         >
-                            {isLoading ? '저장 중...' : '다음 단계로 🎯'}
-                        </Button>
-                    </form>
-                </Card>
-            </motion.div>
+                            🤖
+                        </motion.div>
+                        {/* Speech Bubble */}
+                        <motion.div
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ delay: 0.5, type: "spring" }}
+                            className="absolute -top-4 -left-40 md:-left-45 bg-white p-5 rounded-3xl rounded-br-none shadow-xl border border-blue-100 w-[180px] md:w-[200px] text-center z-20"
+                        >
+                            <p className="text-gray-700 font-bold text-base leading-relaxed">
+                                친구의 이름이 뭐니?<br />
+                                나랑 같이 놀자!
+                            </p>
+                        </motion.div>
+                    </div>
+                </motion.div>
+
+                {/* Form Section */}
+                <motion.div
+                    initial={{ x: 50, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    className="flex-[1.5] w-full"
+                >
+                    <div className="glass-card p-8 rounded-3xl backdrop-blur-xl border border-white/50 shadow-xl bg-white/40">
+                        <div className="text-center mb-6 md:hidden">
+                            <h1 className="text-2xl font-bold text-gray-800">아이 정보 입력</h1>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            {/* Name Input */}
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">
+                                    이름
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.child_name}
+                                    onChange={(e) => setFormData({ ...formData, child_name: e.target.value })}
+                                    className="w-full px-6 py-4 rounded-2xl border-2 border-white/50 bg-white/60 focus:bg-white focus:border-blue-400 focus:outline-none transition-all text-lg shadow-sm placeholder:text-gray-400"
+                                    placeholder="친구의 이름을 알려줘!"
+                                    required
+                                />
+                            </div>
+
+                            <div className="flex gap-4">
+                                {/* Age Input */}
+                                <div className="flex-1">
+                                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">
+                                        나이
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="4"
+                                        max="13"
+                                        value={formData.age}
+                                        onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                                        className="w-full px-6 py-4 rounded-2xl border-2 border-white/50 bg-white/60 focus:bg-white focus:border-blue-400 focus:outline-none transition-all text-lg shadow-sm"
+                                        required
+                                    />
+                                </div>
+
+                                {/* Gender Toggle */}
+                                <div className="flex-[2]">
+                                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">
+                                        성별
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-2 bg-white/40 p-1.5 rounded-2xl border border-white/40">
+                                        {["male", "female"].map((gender) => (
+                                            <button
+                                                key={gender}
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, gender: gender as "male" | "female" })}
+                                                className={`
+                                                  relative py-2.5 rounded-xl text-sm font-bold transition-all overflow-hidden
+                                                  ${formData.gender === gender
+                                                        ? "bg-white text-blue-600 shadow-md scale-[1.02]"
+                                                        : "text-gray-500 hover:bg-white/50"
+                                                    }
+                                                `}
+                                            >
+                                                {gender === "male" ? "👦 왕자님" : "👧 공주님"}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* MBTI Selection (Hidden/Advanced) */}
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">
+                                    성격 (MBTI)
+                                </label>
+                                <select
+                                    value={formData.personality}
+                                    onChange={(e) => setFormData({ ...formData, personality: e.target.value })}
+                                    className="w-full px-6 py-4 rounded-2xl border-2 border-white/50 bg-white/60 focus:bg-white focus:border-blue-400 focus:outline-none transition-all appearance-none cursor-pointer"
+                                >
+                                    {MBTI_TYPES.map((mbti) => (
+                                        <option key={mbti} value={mbti}>{mbti}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                                <Button
+                                    type="submit"
+                                    variant="primary"
+                                    size="lg"
+                                    className="w-full mt-4 py-8 text-xl rounded-2xl shadow-xl bg-gradient-to-r from-blue-400 to-purple-400 border-none hover:opacity-90 transition-opacity"
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? '저장 중...' : '모험 떠나기 🚀'}
+                                </Button>
+                            </motion.div>
+                        </form>
+                    </div>
+                </motion.div>
+            </div>
         </div>
     );
 }
