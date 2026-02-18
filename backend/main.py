@@ -1,4 +1,6 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
 from pydantic import BaseModel
 import asyncio
 
@@ -9,10 +11,16 @@ import db_service
 
 app = FastAPI()
 
-# 프론트엔드 테스트를 위한 임시 유저 ID (어제 DB에 넣은 1111... 유저)
-DUMMY_USER_ID = "2cd2149a-c65a-452d-8ea5-a816e12fef4a"
+# CORS 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Frontend URL explicitly specified
+    allow_credentials=True,
+    allow_methods=["*"],  # 모든 HTTP 메서드 허용 (GET, POST, OPTIONS 등)
+    allow_headers=["*"],  # 모든 헤더 허용
+)
 
-@app.post("/api/generate")
+@app.post("/generate")
 async def generate_story(req: GenerateRequest):
     print(f"\n=============================================")
     print(f"📥 [주문 접수] 아이: {req.child_name}, 감정: {req.emotion}, 진도: {req.stage_code}")
@@ -89,21 +97,16 @@ async def generate_story(req: GenerateRequest):
     # ----------------------------------------------------
     print("\n🎁 [Step 5] 최종 JSON 조립 및 DB 저장 중...")
     
-    # GPT가 짜준 원본 씬 데이터를 복사해서, 방금 받아온 영구 URL들을 끼워 넣습니다.
     final_scenes = []
     for scene in story_draft.scenes:
-        scene_dict = scene.model_dump() # Pydantic 객체를 딕셔너리로 변환
-        
-        # 업로드 결과 매칭
+        scene_dict = scene.model_dump() 
         for res in upload_results:
             if res[0] == scene.scene_no:
-                scene_dict[res[1]] = res[2] # image_url 또는 audio_url에 링크 삽입
-                
+                scene_dict[res[1]] = res[2] 
         final_scenes.append(scene_dict)
 
-    # 최종 완성된 스토리 데이터를 Supabase DB에 저장
     story_id = db_service.save_final_story(
-        user_id=DUMMY_USER_ID,
+        user_id=req.user_id,  
         stage_code=req.stage_code,
         emotion=req.emotion,
         title=story_draft.title,
@@ -122,6 +125,20 @@ async def generate_story(req: GenerateRequest):
         "pdf_url": "https://[PDF기능은_나중에_추가_예정].pdf",
         "scenes": final_scenes
     }
+
+@app.get("/curriculums")
+async def get_curriculums():
+    """프론트엔드 '진도 선택' 화면에 보여줄 교재 목록을 반환합니다."""
+    return db_service.get_all_curriculums()
+
+@app.get("/stories/{story_id}")
+async def get_story(story_id: str):
+    """ID로 동화책 상세 조회"""
+    try:
+        story = db_service.get_story_by_id(story_id)
+        return story
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

@@ -26,14 +26,20 @@ export default function ChildInfoPage() {
         setIsLoading(true);
 
         try {
+            // Convert age to number to match ChildInfo interface & DB
+            const profileData = {
+                ...formData,
+                age: parseInt(formData.age.toString(), 10) || 7 // Default to 7 if parsing fails
+            };
+
             // Save to Zustand store
-            setChildInfo(formData);
+            setChildInfo(profileData);
 
             // Save to Supabase if user is authenticated
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 console.log('Saving profile to Supabase for user:', user.id);
-                await saveUserProfile(user.id, formData);
+                await saveUserProfile(user.id, profileData);
             }
 
             // Navigate to stage select
@@ -112,6 +118,7 @@ export default function ChildInfoPage() {
                                     className="w-full px-6 py-4 rounded-2xl border-2 border-white/50 bg-white/60 focus:bg-white focus:border-blue-400 focus:outline-none transition-all text-lg shadow-sm placeholder:text-gray-400"
                                     placeholder="친구의 이름을 알려줘!"
                                     required
+                                    suppressHydrationWarning
                                 />
                             </div>
 
@@ -129,6 +136,7 @@ export default function ChildInfoPage() {
                                         onChange={(e) => setFormData({ ...formData, age: e.target.value })}
                                         className="w-full px-6 py-4 rounded-2xl border-2 border-white/50 bg-white/60 focus:bg-white focus:border-blue-400 focus:outline-none transition-all text-lg shadow-sm"
                                         required
+                                        suppressHydrationWarning
                                     />
                                 </div>
 
@@ -167,6 +175,7 @@ export default function ChildInfoPage() {
                                     value={formData.personality}
                                     onChange={(e) => setFormData({ ...formData, personality: e.target.value })}
                                     className="w-full px-6 py-4 rounded-2xl border-2 border-white/50 bg-white/60 focus:bg-white focus:border-blue-400 focus:outline-none transition-all appearance-none cursor-pointer"
+                                    suppressHydrationWarning
                                 >
                                     {MBTI_TYPES.map((mbti) => (
                                         <option key={mbti} value={mbti}>{mbti}</option>

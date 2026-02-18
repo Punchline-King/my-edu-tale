@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/Button";
 import { FullscreenToggle } from "@/components/ui/FullscreenToggle";
 import { useUserStore } from "@/store/userStore";
 import { getMockStages } from "@/lib/mockData";
-import { Lock, Check, Play, Star } from "lucide-react";
+import { Lock, Check, Play, Star, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
+import { signOut } from "@/services/authService";
 
 export default function StageSelectPage() {
     const router = useRouter();
@@ -15,6 +16,18 @@ export default function StageSelectPage() {
 
     const stages = getMockStages();
 
+    const handleLogout = async () => {
+        try {
+            await signOut();
+            router.push("/login");
+        } catch (error) {
+            console.error("Logout failed:", error);
+            // Even if Supabase fails, clear local store and go to login
+            useUserStore.getState().logout();
+            router.push("/login");
+        }
+    };
+
     const handleStageClick = (stageId: string) => {
         router.push(`/emotion?stage=${stageId}`);
     };
@@ -22,6 +35,19 @@ export default function StageSelectPage() {
     return (
         <div className="min-h-screen bg-pastel-mesh relative overflow-x-hidden p-4 flex flex-col items-center justify-center">
             <FullscreenToggle />
+
+            {/* Logout Button */}
+            <div className="absolute top-6 right-22 z-50">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLogout}
+                    className="bg-white/20 hover:bg-white/40 text-gray-700 font-bold rounded-full px-4 py-2 flex items-center gap-2 backdrop-blur-sm border border-white/30"
+                >
+                    <LogOut size={18} />
+                    <span>로그아웃</span>
+                </Button>
+            </div>
 
             {/* Background Clouds */}
             <div className="absolute inset-0 pointer-events-none">

@@ -4,6 +4,7 @@ from typing import List, Optional
 
 # 1. 프론트가 백엔드로 보낼 때의 규격 (Input)
 class GenerateRequest(BaseModel):
+    user_id: Optional[str] = None
     child_name: str
     age: int
     personality: str

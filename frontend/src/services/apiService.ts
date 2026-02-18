@@ -14,6 +14,7 @@ export interface GenerateStoryRequest {
     personality: string;
     emotion: string;
     stage_code: string;
+    user_id?: string; // Added to link story to user
 }
 
 /**
@@ -79,7 +80,8 @@ export async function generateStory(
     try {
         onProgress?.('AI가 맞춤 동화를 만들고 있어요...');
 
-        const response = await fetch(`${API_URL}/api/generate`, {
+        // Fixed: Removed /api prefix to match backend main.py
+        const response = await fetch(`${API_URL}/generate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -130,7 +132,7 @@ export async function generateStory(
  */
 export async function fetchStory(storyId: string): Promise<GenerateStoryResponse> {
     try {
-        const response = await fetch(`${API_URL}/api/stories/${storyId}`);
+        const response = await fetch(`${API_URL}/stories/${storyId}`);
 
         if (!response.ok) {
             if (response.status === 404) {

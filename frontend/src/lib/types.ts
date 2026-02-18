@@ -2,7 +2,7 @@
 
 export interface ChildInfo {
     child_name: string;
-    age: string;
+    age: number; // Changed to number to match DB (integer)
     gender: "male" | "female" | "other";
     personality: string; // MBTI type
 }

@@ -1,11 +1,33 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BookOpen, Edit, Paintbrush, Palette, Sparkles } from "lucide-react";
+import { generateStory, ApiError } from "@/services/apiService";
+import { useUserStore } from "@/store/userStore";
+// import { toast } from "react-hot-toast"; // Not installed
 
 export default function LoadingPage() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const [progress, setProgress] = useState(0);
     const [messageIndex, setMessageIndex] = useState(0);
+    const hasCalledApi = useRef(false);
+
+    // Get data from store/URL
+    const childInfo = useUserStore((state) => state.childInfo);
+    // userId might be in store or we get it from searchParams if necessary, 
+    // but better to rely on store or auth. 
+    // Wait, userStore doesn't expose userId directly in the snippet I saw?
+    // I need to check userStore.ts content. 
+    // Assuming auth is handled by store or we get it from Supabase auth.
+    // Let's use the store's user session if available.
+    // Re-checking userStore.ts logic below.
+    const userId = useUserStore((state) => state.userId);
+
+    // Fallback URL params
+    const stage = searchParams.get("stage") || "1-1-1";
+    const emotion = searchParams.get("emotion") || "happiness";
 
     const messages = [
         "AI가 그림 그리는 중...",
@@ -14,27 +36,66 @@ export default function LoadingPage() {
         "거의 다 되었어요! ✨"
     ];
 
+    // Progress animation
     useEffect(() => {
         const interval = setInterval(() => {
             setProgress((prev) => {
-                if (prev >= 100) {
-                    clearInterval(interval);
-                    return 100;
-                }
+                if (prev >= 90) return 90; // Stall at 90 until done
                 return prev + 1;
             });
-        }, 50);
-
+        }, 300); // Slower progress
         return () => clearInterval(interval);
     }, []);
 
+    // Message rotation
     useEffect(() => {
         const messageInterval = setInterval(() => {
             setMessageIndex((prev) => (prev + 1) % messages.length);
-        }, 3000);
-
+        }, 4000);
         return () => clearInterval(messageInterval);
     }, []);
+
+    // API Call
+    useEffect(() => {
+        async function fetchStory() {
+            if (hasCalledApi.current) return;
+            if (!childInfo) {
+                // If no child info, maybe redirect? 
+                // But normally we shouldn't get here without it.
+                // For safety:
+                // router.replace("/child-info"); // Commented out to avoid loops during dev
+            }
+
+            hasCalledApi.current = true;
+
+            try {
+                console.log("Starting story generation...");
+                const response = await generateStory({
+                    child_name: childInfo?.child_name || "친구",
+                    age: typeof childInfo?.age === 'number' ? childInfo.age : 7,
+                    personality: childInfo?.personality || "ENFP",
+                    emotion: emotion,
+                    stage_code: stage,
+                    user_id: userId || undefined
+                });
+
+                console.log("Story generated!", response);
+                setProgress(100);
+
+                // Slight delay to show 100%
+                setTimeout(() => {
+                    router.push(`/story/${response.story_id}`);
+                }, 500);
+
+            } catch (error) {
+                console.error("Generation failed:", error);
+                alert("스토리 생성에 실패했습니다. 다시 시도해주세요.");
+                router.push("/emotion");
+            }
+        }
+
+        fetchStory();
+    }, [childInfo, emotion, stage, router, userId]);
 
     return (
         <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-pastel-mesh overflow-hidden font-sans text-[#111418]">

@@ -2,16 +2,17 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
- * OAuth Callback Handler
- * Handles the redirect from Google OAuth and establishes the session
+ * OAuth Callback Handler using @supabase/ssr
+ * Handles the redirect from Google OAuth and establishes the session using cookies.
  */
 export async function GET(request: NextRequest) {
     const requestUrl = new URL(request.url);
     const code = requestUrl.searchParams.get('code');
+    const next = requestUrl.searchParams.get('next') ?? '/';
     const error = requestUrl.searchParams.get('error');
     const errorDescription = requestUrl.searchParams.get('error_description');
 
-    // Handle OAuth errors
+    // 1. Handle OAuth errors from Supabase
     if (error) {
         console.error('OAuth error:', error, errorDescription);
         return NextResponse.redirect(
@@ -19,45 +20,42 @@ export async function GET(request: NextRequest) {
         );
     }
 
-    // For code exchange, we'll handle it on the client side
-    // since we're using the supabase-js client directly
+    // 2. Handle successful code exchange
     if (code) {
-        // Import here to avoid circular dependencies
-        const { supabase, isSupabaseConfigured } = await import('@/lib/supabase');
+        const { createClient } = await import('@/utils/supabase/server');
+        const supabase = await createClient();
 
-        if (isSupabaseConfigured()) {
-            try {
-                // Exchange code for session
-                const { data: { session }, error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
+        try {
+            // Exchange the code for a session (This will store tokens in cookies)
+            const { data: { session }, error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
 
-                if (sessionError) {
-                    console.error('Session exchange error:', sessionError);
-                    return NextResponse.redirect(new URL('/child-info', requestUrl.origin));
-                }
-
-                if (session?.user) {
-                    // Check if profile exists
-                    const { data: profile, error: profileError } = await supabase
-                        .from('user_profiles')
-                        .select('child_name')
-                        .eq('user_id', session.user.id)
-                        .single();
-
-                    if (profile && !profileError) {
-                        // Existing user - has profile
-                        console.log('Returning user detected, redirecting to stage-select');
-                        return NextResponse.redirect(new URL('/stage-select', requestUrl.origin));
-                    }
-                }
-            } catch (error) {
-                console.error('Error during profile check:', error);
+            if (sessionError) {
+                console.error('Session exchange error:', sessionError);
+                return NextResponse.redirect(new URL('/login?error=session_exchange_failed', requestUrl.origin));
             }
+
+            if (session?.user) {
+                // Check if a child profile already exists in the 'users' table
+                const { data: profile, error: profileError } = await supabase
+                    .from('users')
+                    .select('child_name')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (profile && !profileError) {
+                    // Profile found -> Send to stage selection
+                    console.log('Existing user profile found. Redirecting to stage-select.');
+                    return NextResponse.redirect(new URL('/stage-select', requestUrl.origin));
+                }
+            }
+        } catch (err) {
+            console.error('Unexpected error during auth callback:', err);
         }
 
-        // New user or error - redirect to child-info
+        // No profile found or error during check -> Send to profile creation
         return NextResponse.redirect(new URL('/child-info', requestUrl.origin));
     }
 
-    // No code or error, redirect to login
+    // 3. Fallback: No code or error provided
     return NextResponse.redirect(new URL('/login', requestUrl.origin));
 }

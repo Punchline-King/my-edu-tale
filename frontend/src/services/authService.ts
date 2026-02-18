@@ -8,8 +8,8 @@
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 // Mock mode for development (Supabase not required)
-// Set to 'false' once Supabase is configured
-export const IS_MOCK = 'false';
+// Set to false once Supabase is configured
+export const IS_MOCK = false;
 
 // Mock user type (also used for Supabase users)
 export interface MockUser {

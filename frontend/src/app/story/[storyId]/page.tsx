@@ -73,6 +73,10 @@ export default function StoryPage({
     const [isMobileLandscape, setIsMobileLandscape] = useState(false);
     const [mobileScale, setMobileScale] = useState(1);
 
+    // State for story data
+    const [story, setStory] = useState<any>(null); // Using any temporarily to avoid strict type mismatch during dev, or import types
+    const [loading, setLoading] = useState(true);
+
     // Detect mobile portrait and force landscape
     useEffect(() => {
         const checkOrientation = () => {
@@ -100,13 +104,35 @@ export default function StoryPage({
     }, []);
 
     // Fetch story data
-    const story = getMockStory(resolvedParams.storyId, childInfo, gameSession);
-    const currentScene = story.scenes[currentSceneIndex];
-    const isLastScene = currentSceneIndex === story.scenes.length - 1;
+    useEffect(() => {
+        async function loadStory() {
+            try {
+                // Import dynamically to avoid server-side issues if any
+                const { fetchStory } = await import("@/services/apiService");
+                const data = await fetchStory(resolvedParams.storyId);
+                setStory(data);
+            } catch (error) {
+                console.error("Failed to load story:", error);
+                // Fallback to mock if fetch fails? Or just show error?
+                // For now, let's fallback to mock for safety during dev/demo if backend is down
+                const { getMockStory } = await import("@/lib/mockData");
+                setStory(getMockStory(resolvedParams.storyId, childInfo, gameSession));
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadStory();
+    }, [resolvedParams.storyId, childInfo, gameSession]);
+
+    // Safe access to current scene
+    const currentScene = story?.scenes?.[currentSceneIndex];
+    const isLastScene = story?.scenes ? currentSceneIndex === story.scenes.length - 1 : false;
     const isFirstScene = currentSceneIndex === 0;
 
     // Check if current scene has a quiz
     useEffect(() => {
+        if (!currentScene) return;
+
         if (currentScene.quiz && !quizCompleted) {
             // Show quiz after a short delay (simulating audio completion)
             const timer = setTimeout(() => {
@@ -116,7 +142,15 @@ export default function StoryPage({
         } else {
             setShowQuiz(false);
         }
-    }, [currentSceneIndex, currentScene.quiz, quizCompleted]);
+    }, [currentSceneIndex, currentScene, quizCompleted]);
+
+    if (loading || !story || !currentScene) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-pastel-mesh">
+                <div className="animate-bounce text-4xl">📚</div>
+            </div>
+        );
+    }
 
     const handleNext = () => {
         if (currentScene.quiz && !quizCompleted) {
@@ -271,7 +305,7 @@ export default function StoryPage({
                         height={1024}
                         usePortrait={false}
                     >
-                        {story.scenes.flatMap((scene, sceneIndex) => {
+                        {story.scenes.flatMap((scene: any, sceneIndex: number) => {
                             const [leftText, rightText] = splitTextIntoHalves(scene.text);
 
                             return [

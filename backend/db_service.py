@@ -25,6 +25,16 @@ def get_curriculum(stage_code: str):
     data = response.data[0]
     return data["title"], data["source_text"]
 
+def get_all_curriculums():
+    print("🔍 [DB] 전체 커리큘럼 목록 조회 중...")
+    try:
+        # 필요한 필드만 선택해서 가져오기 (stage_code, title, chapter 등)
+        response = supabase.table("curriculums").select("stage_code, title, chapter, description").order("stage_code").execute()
+        return response.data
+    except Exception as e:
+        print(f"❌ [DB] 커리큘럼 조회 실패: {e}")
+        return []
+
 # ==========================================
 # 2. 파일 업로드 및 퍼블릭 URL 받기 (Storage)
 # ==========================================
@@ -88,3 +98,13 @@ def save_final_story(user_id: str, stage_code: str, emotion: str, title: str, sc
     print(f"✅ [DB] 동화책 저장 완료! (Story ID: {saved_id})")
     
     return saved_id
+
+def get_story_by_id(story_id: str):
+    """ID로 동화책 조회"""
+    print(f"🔍 [DB] 동화책 조회 중... (ID: {story_id})")
+    response = supabase.table("stories").select("*").eq("id", story_id).execute()
+    
+    if not response.data:
+        raise ValueError(f"Story not found: {story_id}")
+        
+    return response.data[0]
