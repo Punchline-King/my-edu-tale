@@ -83,7 +83,7 @@ export default function ChildInfoPage() {
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ delay: 0.5, type: "spring" }}
-                            className="absolute -top-4 -left-45 p-3 md:-left-50 bg-white md:p-4 rounded-3xl rounded-br-none shadow-xl border border-blue-100 w-[180px] md:w-[200px] text-center z-20"
+                            className="absolute -top-4 -left-35 p-2 md:-left-40 bg-white md:p-2 rounded-3xl rounded-br-none shadow-xl border border-blue-100 w-[150px] md:w-[180px] text-center z-20"
                         >
                             <p className="text-gray-700 font-bold text-base leading-relaxed">
                                 친구의 이름이 뭐니?<br />
