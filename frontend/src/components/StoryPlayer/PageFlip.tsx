@@ -22,6 +22,7 @@ interface PageFlipBookProps {
     width?: number;
     height?: number;
     usePortrait?: boolean;
+    startPage?: number;
 }
 
 export interface PageFlipBookHandle {
@@ -32,7 +33,7 @@ export interface PageFlipBookHandle {
 }
 
 export const PageFlipBook = forwardRef<PageFlipBookHandle, PageFlipBookProps>(
-    ({ children, onPageChange, width = 550, height = 733, usePortrait = false }, ref) => {
+    ({ children, onPageChange, width = 550, height = 733, usePortrait = false, startPage = 0 }, ref) => {
         const bookRef = useRef<any>(null);
         const [isMounted, setIsMounted] = useState(false);
 
@@ -84,6 +85,7 @@ export const PageFlipBook = forwardRef<PageFlipBookHandle, PageFlipBookProps>(
                     ref={bookRef}
                     width={width}
                     height={height}
+                    startPage={startPage}
                     size="fixed"
                     minWidth={width}
                     maxWidth={width}

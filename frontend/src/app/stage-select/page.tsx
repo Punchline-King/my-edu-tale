@@ -13,6 +13,12 @@ export default function StageSelectPage() {
     const router = useRouter();
     const childInfo = useUserStore((state) => state.childInfo);
     const completedStages = useUserStore((state) => state.completedStages);
+    const titleSuffix =
+        childInfo?.gender === "male"
+            ? "왕자님"
+            : childInfo?.gender === "female"
+                ? "공주님"
+                : "대장님";
 
     const stages = getMockStages();
 
@@ -88,7 +94,7 @@ export default function StageSelectPage() {
                         <div className="glass-card rounded-full inline-block" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
                             {childInfo && (
                                 <p className="text-2xl md:text-4xl text-gray-700 font-bold leading-relaxed">
-                                    {childInfo.child_name} 대장님,<br className="md:hidden" /> 어디로 떠날까요?
+                                    {childInfo.child_name} {titleSuffix},<br className="md:hidden" /> 어디로 떠날까요?
                                 </p>
                             )}
                         </div>

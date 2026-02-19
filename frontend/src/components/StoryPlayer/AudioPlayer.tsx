@@ -8,29 +8,36 @@ interface AudioPlayerProps {
     audioUrl: string;
     onEnded?: () => void;
     autoPlay?: boolean;
+    autoPlayToken?: string | number;
 }
 
 export function AudioPlayer({
     audioUrl,
     onEnded,
     autoPlay = true,
+    autoPlayToken,
 }: AudioPlayerProps) {
     const audioRef = useRef<HTMLAudioElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
     const [progress, setProgress] = useState(0);
+    const [hasEnded, setHasEnded] = useState(false);
+    const lastAutoPlayTokenRef = useRef<string | number | undefined>(undefined);
 
     useEffect(() => {
         const audio = audioRef.current;
         if (!audio) return;
 
-        // Auto-play logic
-        if (autoPlay) {
+        // Auto-play exactly once per token (prevents duplicate auto-reads)
+        if (autoPlay && autoPlayToken !== undefined && lastAutoPlayTokenRef.current !== autoPlayToken) {
+            lastAutoPlayTokenRef.current = autoPlayToken;
+            audio.currentTime = 0;
             const playPromise = audio.play();
             if (playPromise !== undefined) {
                 playPromise
                     .then(() => {
                         setIsPlaying(true);
+                        setHasEnded(false);
                     })
                     .catch((error) => {
                         console.warn("Auto-play prevented:", error);
@@ -39,25 +46,10 @@ export function AudioPlayer({
             }
         }
 
-        // Update progress
-        const updateProgress = () => {
-            if (audio.duration) {
-                setProgress((audio.currentTime / audio.duration) * 100);
-            }
-        };
-
-        audio.addEventListener("timeupdate", updateProgress);
-        audio.addEventListener("ended", () => {
-            setIsPlaying(false);
-            setProgress(0);
-            onEnded?.();
-        });
-
         return () => {
-            audio.removeEventListener("timeupdate", updateProgress);
             audio.pause();
         };
-    }, [audioUrl, autoPlay, onEnded]);
+    }, [audioUrl, autoPlay, autoPlayToken]);
 
     const togglePlay = () => {
         const audio = audioRef.current;
@@ -67,6 +59,11 @@ export function AudioPlayer({
             audio.pause();
             setIsPlaying(false);
         } else {
+            // Restart only after the audio has fully ended
+            if (hasEnded || (audio.duration && audio.currentTime >= audio.duration - 0.05)) {
+                audio.currentTime = 0;
+                setProgress(0);
+            }
             audio.play().then(() => setIsPlaying(true));
         }
     };
@@ -81,7 +78,31 @@ export function AudioPlayer({
 
     return (
         <div className="w-full mx-auto">
-            <audio ref={audioRef} src={audioUrl} preload="auto" />
+            <audio
+                ref={audioRef}
+                src={audioUrl}
+                preload="auto"
+                onLoadedData={() => {
+                    setIsPlaying(false);
+                    setProgress(0);
+                    setHasEnded(false);
+                }}
+                onTimeUpdate={(e) => {
+                    const audio = e.currentTarget;
+                    if (audio.duration) {
+                        setProgress((audio.currentTime / audio.duration) * 100);
+                    }
+                    if (hasEnded && audio.currentTime < audio.duration) {
+                        setHasEnded(false);
+                    }
+                }}
+                onEnded={() => {
+                    setIsPlaying(false);
+                    setProgress(100);
+                    setHasEnded(true);
+                    onEnded?.();
+                }}
+            />
 
             <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 shadow-lg">
                 {/* Controls */}

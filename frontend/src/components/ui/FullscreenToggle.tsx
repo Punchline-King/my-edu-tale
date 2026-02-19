@@ -1,34 +1,46 @@
 "use client";
 
 import { Maximize, Minimize } from "lucide-react";
-import { useState, useEffect } from "react";
+import { RefObject, useState, useEffect } from "react";
 import { Button } from "./Button";
 
-export function FullscreenToggle() {
+interface FullscreenToggleProps {
+    targetRef?: RefObject<HTMLElement | null>;
+    className?: string;
+}
+
+export function FullscreenToggle({ targetRef, className = "fixed bottom-6 right-6 z-30" }: FullscreenToggleProps) {
     const [isFullscreen, setIsFullscreen] = useState(false);
-    const [isSupported, setIsSupported] = useState(true);
+    const isSupported = typeof document === "undefined" ? true : document.fullscreenEnabled;
 
     useEffect(() => {
-        // Check if Fullscreen API is supported
-        if (!document.fullscreenEnabled) {
-            setIsSupported(false);
-        }
-
         // Listen for fullscreen changes
         const handleFullscreenChange = () => {
-            setIsFullscreen(!!document.fullscreenElement);
+            const fullscreenEl = document.fullscreenElement;
+            if (!fullscreenEl) {
+                setIsFullscreen(false);
+                return;
+            }
+
+            if (targetRef?.current) {
+                setIsFullscreen(fullscreenEl === targetRef.current);
+                return;
+            }
+
+            setIsFullscreen(true);
         };
 
         document.addEventListener("fullscreenchange", handleFullscreenChange);
         return () => {
             document.removeEventListener("fullscreenchange", handleFullscreenChange);
         };
-    }, []);
+    }, [targetRef]);
 
     const toggleFullscreen = async () => {
         try {
             if (!document.fullscreenElement) {
-                await document.documentElement.requestFullscreen();
+                const target = targetRef?.current ?? document.documentElement;
+                await target.requestFullscreen();
             } else {
                 await document.exitFullscreen();
             }
@@ -45,7 +57,7 @@ export function FullscreenToggle() {
     }
 
     return (
-        <div className="fixed bottom-6 right-6 z-30">
+        <div className={className}>
             <Button
                 variant="ghost"
                 size="md"

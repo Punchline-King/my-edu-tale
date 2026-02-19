@@ -105,7 +105,9 @@ export default function LoadingPage() {
                     <div className="size-10 bg-white/40 backdrop-blur-md rounded-xl flex items-center justify-center text-primary shadow-sm border border-white/20">
                         <BookOpen size={24} />
                     </div>
-                    <h2 className="text-lg font-bold leading-tight tracking-tight">Story AI</h2>
+                    <h2 className="text-lg md:text-xl font-extrabold leading-tight tracking-tight text-gradient-primary">
+                        My Edu-Tale
+                    </h2>
                 </div>
                 <div className="flex items-center gap-6">
                     <div className="bg-white/40 backdrop-blur-md rounded-full px-4 py-1.5 flex items-center gap-2 border border-white/20 shadow-sm">
@@ -125,7 +127,7 @@ export default function LoadingPage() {
                     {/* Inner Rotating Tools Layer */}
                     <div className="relative size-full flex items-center justify-center animate-float">
                         {/* Art Tool 1: Pencils (Top Left) - Rounded Square */}
-                        <div className="absolute -top-4 -left-4 size-32 bg-pastel-peach rounded-2xl rotate-[-15deg] shadow-xl flex items-center justify-center border-4 border-white transform transition-transform hover:scale-105">
+                        <div className="absolute -top-4 -left-10 size-32 bg-pastel-peach rounded-2xl rotate-[-15deg] shadow-xl flex items-center justify-center border-4 border-white transform transition-transform hover:scale-105">
                             <Edit size={48} className="text-orange-400/80" />
                         </div>
 
@@ -157,7 +159,7 @@ export default function LoadingPage() {
 
                 {/* Text Content */}
                 <div className="space-y-4 relative z-10 w-full flex flex-col items-center">
-                    <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight px-4 leading-[1.2] text-gray-900 drop-shadow-sm min-h-[60px] transition-all duration-300">
+                    <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight px-4 leading-[1.2] text-gray-700 drop-shadow-sm min-h-[60px] transition-all duration-300">
                         {messages[messageIndex]}
                     </h1>
                     <p className="text-gray-600 text-lg md:text-xl font-medium px-4">
