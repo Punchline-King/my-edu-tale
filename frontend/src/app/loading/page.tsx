@@ -98,7 +98,7 @@ export default function LoadingPage() {
     }, [childInfo, emotion, stage, router, userId]);
 
     return (
-        <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-pastel-mesh overflow-hidden font-sans text-[#111418]">
+        <div className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden font-sans text-[#111418]">
             {/* Top Navigation */}
             <header className="fixed top-0 left-0 w-full flex items-center justify-between px-6 md:px-10 py-6 z-10">
                 <div className="flex items-center gap-3">

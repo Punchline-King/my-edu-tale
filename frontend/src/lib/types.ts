@@ -45,7 +45,7 @@ export type StageStatus = "locked" | "unlocked" | "completed";
 export const EMOTION_ICONS: Record<GameSession["emotion"], string> = {
     happiness: "😊",
     sadness: "😢",
-    anger: "😠",
+    anger: "😡",
     fear: "😨",
     bored: "😑",
 };

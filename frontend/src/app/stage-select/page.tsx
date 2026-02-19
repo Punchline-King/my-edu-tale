@@ -33,11 +33,11 @@ export default function StageSelectPage() {
     };
 
     return (
-        <div className="min-h-screen bg-pastel-mesh relative overflow-x-hidden p-4 flex flex-col items-center justify-center">
+        <div className="min-h-screen relative overflow-x-hidden p-4 flex flex-col items-center justify-center">
             <FullscreenToggle />
 
             {/* Logout Button */}
-            <div className="absolute top-6 right-22 z-50">
+            <div className="absolute top-8 right-8 md:right-20 z-50">
                 <Button
                     variant="ghost"
                     size="sm"
@@ -96,7 +96,7 @@ export default function StageSelectPage() {
                 </div>
 
                 {/* Map Container */}
-                <div className="relative flex flex-col items-center gap-24 md:gap-40" style={{ marginTop: '150px' }}>
+                <div className="relative flex flex-col items-center gap-24 md:gap-40" style={{ marginTop: '80px' }}>
 
                     {/* Winding Path SVG (Background) */}
                     <div className="absolute inset-0 w-full h-full pointer-events-none flex justify-center">
@@ -128,7 +128,11 @@ export default function StageSelectPage() {
                                 initial={{ opacity: 0, scale: 0.8, y: 50 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 transition={{ delay: index * 0.2 }}
-                                className={`relative z-10 ${index % 2 === 0 ? 'translate-x-0 md:-translate-x-32' : 'translate-x-0 md:translate-x-32'}`}
+                                className={`relative z-10 ${
+                                    index % 2 === 0
+                                        ? "-translate-x-8 sm:-translate-x-12 md:-translate-x-32"
+                                        : "translate-x-8 sm:translate-x-12 md:translate-x-32"
+                                }`}
                             >
                                 <motion.div
                                     whileHover={!isLocked ? { y: -10, scale: 1.05 } : {}}

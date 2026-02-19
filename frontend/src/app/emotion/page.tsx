@@ -41,7 +41,7 @@ export default function EmotionPage() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-pastel-mesh relative">
+        <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
             {/* Background Decoration */}
             <div className="absolute inset-0 pointer-events-none">
                 <motion.div
@@ -62,8 +62,8 @@ export default function EmotionPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="mb-12"
                 >
-                    <div className="inline-block bg-white/40 backdrop-blur-md px-8 py-4 rounded-3xl border border-white/50 shadow-lg">
-                        <h1 className="text-3xl md:text-5xl font-extrabold mb-2 text-gray-800">
+                    <div className="inline-block bg-white/40 backdrop-blur-md px-10 py-6 rounded-3xl border border-white/50 shadow-lg">
+                        <h1 className="text-3xl md:text-5xl font-extrabold mb-2 text-gray-700">
                             오늘 기분이 어때요? 🤔
                         </h1>
                         <p className="text-lg text-gray-600 font-medium">
@@ -104,7 +104,7 @@ export default function EmotionPage() {
                 >
                     <Button
                         variant="ghost"
-                        size="md"
+                        size="lg"
                         onClick={() => router.back()}
                         className="text-gray-600 hover:text-gray-900 font-bold bg-white/30 hover:bg-white/50 px-6 py-2 rounded-full backdrop-blur-sm"
                     >

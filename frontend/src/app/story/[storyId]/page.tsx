@@ -146,7 +146,7 @@ export default function StoryPage({
 
     if (loading || !story || !currentScene) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-pastel-mesh">
+            <div className="min-h-screen flex items-center justify-center">
                 <div className="animate-bounce text-4xl">📚</div>
             </div>
         );
@@ -188,7 +188,7 @@ export default function StoryPage({
 
     if (showStageClear) {
         return (
-            <div className="min-h-screen flex items-center justify-center p-4 bg-pastel-mesh">
+            <div className="min-h-screen flex items-center justify-center p-4">
                 <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -259,7 +259,7 @@ export default function StoryPage({
     }
 
     return (
-        <div className={`min-h-screen flex flex-col items-center justify-center p-4 md:p-8 bg-pastel-mesh relative overflow-hidden transition-all duration-300
+        <div className={`min-h-screen flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden transition-all duration-300
             ${isMobileLandscape ? 'fixed inset-0 w-[100vh] h-[100vw] rotate-90 origin-top-left translate-x-[100%] z-50 m-0 p-0 overflow-y-auto' : ''}
         `}>
             {/* Background Decoration */}

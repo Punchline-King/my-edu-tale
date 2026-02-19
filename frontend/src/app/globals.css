@@ -52,15 +52,25 @@
 }
 
 /* ===== Global Styles ===== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 }
 
 body {
-  background: linear-gradient(135deg, var(--color-sky) 0%, var(--color-lemon) 50%, var(--color-mint) 100%);
+  /*background: linear-gradient(135deg, var(--color-sky) 0%, var(--color-lemon) 50%, var(--color-mint) 100%);
+  background-attachment: fixed;*/
+  background-color: #F5E6FF  ;
+  background-image:
+    radial-gradient(at 0% 0%, #B4E4FF 0px, transparent 50%),
+    radial-gradient(at 100% 0%, #E5C1FF 0px, transparent 50%),
+    radial-gradient(at 100% 100%, #FFE5D9 0px, transparent 50%),
+    radial-gradient(at 0% 100%, #B4E4FF 0px, transparent 50%);
   background-attachment: fixed;
+  background-size: cover;
   color: var(--foreground);
   font-family: var(--font-family-sans);
   min-height: 100vh;
@@ -69,7 +79,7 @@ body {
 
 /* ===== Custom Utilities ===== */
 .bg-pastel-mesh {
-  background-color: #FFE5D9;
+  background-color: transparent;
   background-image:
     radial-gradient(at 0% 0%, #B4E4FF 0px, transparent 50%),
     radial-gradient(at 100% 0%, #E5C1FF 0px, transparent 50%),

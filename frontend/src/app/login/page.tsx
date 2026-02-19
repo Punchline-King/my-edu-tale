@@ -26,7 +26,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-pastel-mesh relative overflow-hidden">
+        <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
 
             {/* Background Decorations */}
             <div className="absolute inset-0 pointer-events-none">
@@ -59,21 +59,21 @@ export default function LoginPage() {
                     initial={{ y: 50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                    className="text-[120px] drop-shadow-xl z-20 mb-10 relative"
+                    className="text-[150px] drop-shadow-xl z-20 mb-8 relative"
                 >
                     🤖
                     <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.8 }}
-                        className="absolute -right-8 -top-4 bg-white px-4 py-2 rounded-full text-lg shadow-lg border border-gray-100 whitespace-nowrap"
+                        className="absolute -right-18 bottom-40 bg-white min-w-[75px] text-center rounded-full text-lg shadow-lg border border-gray-100 whitespace-nowrap"
                     >
                         안녕! 👋
                     </motion.div>
                 </motion.div>
 
-                <div className="w-full glass-card p-12 pt-12 rounded-[2.5rem] backdrop-blur-xl border border-white/50 shadow-2xl relative bg-white/40">
-                    <div className="text-center mb-10">
+                <div className="w-full glass-card px-12 pt-8 pb-10 rounded-[2.5rem] backdrop-blur-xl border border-white/50 shadow-2xl relative bg-white/40">
+                    <div className="text-center mb-10 mt-2">
                         <h1 className="text-4xl font-extrabold mb-4 text-gray-700">
                             부모님 로그인
                         </h1>

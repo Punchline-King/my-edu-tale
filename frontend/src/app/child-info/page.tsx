@@ -54,7 +54,7 @@ export default function ChildInfoPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-pastel-mesh relative overflow-hidden">
+        <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
             {/* Background Decoration */}
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-10 right-10 w-20 h-20 bg-yellow-300 rounded-full blur-2xl opacity-50 animate-pulse"></div>
@@ -83,7 +83,7 @@ export default function ChildInfoPage() {
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ delay: 0.5, type: "spring" }}
-                            className="absolute -top-4 -left-40 md:-left-45 bg-white p-5 rounded-3xl rounded-br-none shadow-xl border border-blue-100 w-[180px] md:w-[200px] text-center z-20"
+                            className="absolute -top-4 -left-45 p-3 md:-left-50 bg-white md:p-4 rounded-3xl rounded-br-none shadow-xl border border-blue-100 w-[180px] md:w-[200px] text-center z-20"
                         >
                             <p className="text-gray-700 font-bold text-base leading-relaxed">
                                 친구의 이름이 뭐니?<br />

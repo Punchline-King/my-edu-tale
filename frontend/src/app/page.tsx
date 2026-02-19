@@ -8,7 +8,7 @@ export default function HomePage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-pastel-mesh overflow-hidden relative">
+    <div className="min-h-screen flex items-center justify-center p-4 overflow-hidden relative">
 
       {/* Floating Background Elements */}
       <div className="absolute inset-0 pointer-events-none">
@@ -65,12 +65,12 @@ export default function HomePage() {
         </div>
 
         {/* Title */}
-        <h1 className="text-5xl md:text-7xl font-extrabold text-gradient-primary tracking-tight shrink-0" style={{ marginBottom: '10px' }}>
+        <h1 className="text-5xl md:text-6xl font-extrabold text-gradient-primary tracking-tight shrink-0" style={{ marginBottom: '10px' }}>
           My Edu-Tale
         </h1>
 
         {/* Subtitle */}
-        <div className="glass-card rounded-2xl p-6 md:p-8 w-full mx-auto backdrop-blur-xl border-white/40 text-center" style={{ marginBottom: '80px', maxWidth: '450px', marginLeft: 'auto', marginRight: 'auto' }}>
+        <div className="glass-card rounded-2xl p-2 md:px-4 w-full mx-auto backdrop-blur-xl border-white/40 text-center" style={{ maxWidth: '475px', marginBottom: '80px', marginLeft: 'auto', marginRight: 'auto' }}>
           <p className="text-xl md:text-2xl text-foreground/80 font-bold mb-2">
             AI 친구와 함께 떠나는 수학 모험!
           </p>
@@ -87,9 +87,9 @@ export default function HomePage() {
         >
           <Button
             variant="primary"
-            size="lg"
+            size="xl"
             onClick={() => router.push("/login")}
-            className="text-3xl md:text-3xl px-16 py-10 md:px-20 md:py-12 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-r from-primary to-secondary border-none" style={{ maxWidth: '450px', width: '100%', marginLeft: 'auto', marginRight: 'auto', height: '100px' }}
+            className="px-10 py-6 md:px-20 md:py-10 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-r from-primary to-secondary border-none" style={{ maxWidth: '450px', marginLeft: 'auto', marginRight: 'auto'}}
           >
             모험 시작하기 🚀
           </Button>
