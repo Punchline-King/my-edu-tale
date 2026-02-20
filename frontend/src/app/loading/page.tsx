@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { Suspense, useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BookOpen, Edit, Paintbrush, Palette, Sparkles } from "lucide-react";
 import { generateStory, ApiError } from "@/services/apiService";
 import { useUserStore } from "@/store/userStore";
 // import { toast } from "react-hot-toast"; // Not installed
 
-export default function LoadingPage() {
+function LoadingPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [progress, setProgress] = useState(0);
@@ -197,5 +197,19 @@ export default function LoadingPage() {
             <div className="fixed top-1/4 -left-20 size-80 bg-pastel-blue/30 rounded-full blur-[100px] pointer-events-none"></div>
             <div className="fixed bottom-1/4 -right-20 size-80 bg-pastel-purple/30 rounded-full blur-[100px] pointer-events-none"></div>
         </div>
+    );
+}
+
+export default function LoadingPage() {
+    return (
+        <Suspense
+            fallback={
+                <div className="min-h-screen flex items-center justify-center">
+                    <div className="animate-bounce text-3xl md:text-4xl">🎨</div>
+                </div>
+            }
+        >
+            <LoadingPageContent />
+        </Suspense>
     );
 }

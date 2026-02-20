@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { useUserStore } from "@/store/userStore";
@@ -7,7 +8,7 @@ import { EMOTION_ICONS } from "@/lib/types";
 import { motion } from "framer-motion";
 import type { GameSession } from "@/lib/types";
 
-export default function EmotionPage() {
+function EmotionPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const stage = searchParams.get("stage") || "1-1-1";
@@ -113,5 +114,19 @@ export default function EmotionPage() {
                 </motion.div>
             </div>
         </div>
+    );
+}
+
+export default function EmotionPage() {
+    return (
+        <Suspense
+            fallback={
+                <div className="min-h-screen flex items-center justify-center">
+                    <div className="animate-bounce text-3xl md:text-4xl">🤔</div>
+                </div>
+            }
+        >
+            <EmotionPageContent />
+        </Suspense>
     );
 }

@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { MockUser } from '@/services/authService';
+import { MockUser, signOut as serviceSignOut } from '@/services/authService';
 import { useUserStore } from '@/store/userStore';
-import { authSignOut } from '@/services/authService';
 
 export function useAuth() {
     const router = useRouter();
@@ -84,7 +83,7 @@ export function useAuth() {
 
     const signOut = async () => {
         try {
-            await authSignOut();
+            await serviceSignOut();
             setUser(null);
             userStore.clearUser();
             router.push('/login');

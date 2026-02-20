@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 import React from "react";
 
 type ButtonVariant = "primary" | "secondary" | "success" | "danger" | "ghost";
-type ButtonSize = "sm" | "md" | "lg";
+type ButtonSize = "sm" | "md" | "lg" | "xl";
 
 interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
     children: React.ReactNode;
