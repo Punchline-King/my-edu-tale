@@ -66,14 +66,17 @@ export default function StoryPage({
     const markStageComplete = useUserStore((state) => state.markStageComplete);
     const bookRef = useRef<PageFlipBookHandle>(null);
     const bookFullscreenRef = useRef<HTMLDivElement>(null);
+    const mobileScrollRef = useRef<HTMLDivElement>(null);
+    const mobileBookRef = useRef<HTMLDivElement>(null);
 
     const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
     const [showQuiz, setShowQuiz] = useState(false);
     const [quizCompleted, setQuizCompleted] = useState(false);
     const [showStageClear, setShowStageClear] = useState(false);
-    const [isMobileDevice, setIsMobileDevice] = useState(false);
-    const [isMobilePortrait, setIsMobilePortrait] = useState(false);
-    const [mobileScale, setMobileScale] = useState(1);
+    const [isMdDown, setIsMdDown] = useState(false);
+    const [isViewportPortrait, setIsViewportPortrait] = useState(false);
+    const [viewportWidth, setViewportWidth] = useState(0);
+    const [viewportHeight, setViewportHeight] = useState(0);
     const [bookScale, setBookScale] = useState(1);
     const [currentPageIndex, setCurrentPageIndex] = useState(0);
     const [isNarrationDone, setIsNarrationDone] = useState(false);
@@ -86,41 +89,32 @@ export default function StoryPage({
 
     const BOOK_PAGE_WIDTH = 896;
     const BOOK_PAGE_HEIGHT = 1024;
+    const MD_BREAKPOINT = 768;
 
-    // Force landscape-style viewing on phones
+    // Track viewport for responsive layout
     useEffect(() => {
-        const checkOrientation = () => {
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            const shortSide = Math.min(width, height);
-            const longSide = Math.max(width, height);
-            const isTouch = window.matchMedia("(pointer: coarse)").matches;
-            const isMobileUA = /Android|iPhone|iPad|iPod|Mobile|Windows Phone/i.test(navigator.userAgent);
-            // Broader phone detection so larger phones/foldables are still treated as mobile
-            const isMobile = (isTouch && shortSide <= 900 && longSide <= 1600) || isMobileUA;
-            const isPortrait = height > width;
+        const updateViewport = () => {
+            const visualWidth = window.visualViewport?.width;
+            const visualHeight = window.visualViewport?.height;
+            const width = Math.round(visualWidth ?? window.innerWidth);
+            const height = Math.round(visualHeight ?? window.innerHeight);
 
-            setIsMobileDevice(isMobile);
-            setIsMobilePortrait(isMobile && isPortrait);
-
-            if (isMobile) {
-                // Fit the whole open book inside the visible device viewport (landscape basis)
-                const landscapeViewportWidth = Math.max(width, height);
-                const landscapeViewportHeight = Math.min(width, height);
-                const horizontalPadding = 12;
-                const verticalPadding = 12;
-                const spreadWidth = BOOK_PAGE_WIDTH * 2;
-                const scaleByWidth = (landscapeViewportWidth - horizontalPadding) / spreadWidth;
-                const scaleByHeight = (landscapeViewportHeight - verticalPadding) / BOOK_PAGE_HEIGHT;
-                setMobileScale(Math.max(0.3, Math.min(scaleByWidth, scaleByHeight)));
-            } else {
-                setMobileScale(1);
-            }
+            setViewportWidth(width);
+            setViewportHeight(height);
+            setIsMdDown(width < MD_BREAKPOINT);
+            setIsViewportPortrait(height > width);
         };
 
-        checkOrientation();
-        window.addEventListener('resize', checkOrientation);
-        return () => window.removeEventListener('resize', checkOrientation);
+        updateViewport();
+        window.addEventListener("resize", updateViewport);
+        window.addEventListener("orientationchange", updateViewport);
+        window.visualViewport?.addEventListener("resize", updateViewport);
+
+        return () => {
+            window.removeEventListener("resize", updateViewport);
+            window.removeEventListener("orientationchange", updateViewport);
+            window.visualViewport?.removeEventListener("resize", updateViewport);
+        };
     }, []);
 
     // Fetch story data
@@ -149,6 +143,9 @@ export default function StoryPage({
     const isLastScene = story?.scenes ? currentSceneIndex === story.scenes.length - 1 : false;
     const isFirstScene = currentSceneIndex === 0;
     const isSceneLastPage = currentPageIndex % 2 === 1;
+    const forceLandscapeOnMd = isMdDown;
+    const rotateForPortrait = forceLandscapeOnMd && isViewportPortrait;
+    const useMobileLayeredLayout = forceLandscapeOnMd && !isBookFullscreen;
     const readDelayMs = Math.min(
         14000,
         Math.max(4500, Math.round(((currentScene?.text?.length || 0) / 14) * 1000))
@@ -160,7 +157,11 @@ export default function StoryPage({
 
     useEffect(() => {
         const handleFullscreenChange = () => {
-            setIsBookFullscreen(document.fullscreenElement === bookFullscreenRef.current);
+            const fullscreenEl = document.fullscreenElement;
+            setIsBookFullscreen(
+                !!fullscreenEl &&
+                (fullscreenEl === bookFullscreenRef.current || fullscreenEl === document.documentElement)
+            );
         };
 
         document.addEventListener("fullscreenchange", handleFullscreenChange);
@@ -175,28 +176,58 @@ export default function StoryPage({
         prevFullscreenRef.current = isBookFullscreen;
     }, [isBookFullscreen]);
 
-    // Keep the open-book size within one screen while preserving aspect ratio
+    // Keep book scaled to viewport while preserving aspect ratio
     useEffect(() => {
-        const calculateBookScale = () => {
-            if (isMobileDevice) return;
-            const spreadWidth = BOOK_PAGE_WIDTH * 2;
-            const horizontalPadding = isBookFullscreen ? 8 : 80;
-            const verticalReserved = isBookFullscreen ? 8 : currentScene?.audio_url ? 320 : 260;
-            const availableWidth = window.innerWidth - horizontalPadding;
-            const availableHeight = window.innerHeight - verticalReserved;
-            const scaleByWidth = availableWidth / spreadWidth;
-            const scaleByHeight = availableHeight / BOOK_PAGE_HEIGHT;
+        if (viewportWidth === 0 || viewportHeight === 0) return;
 
-            // Keep aspect ratio and scale until either width or height touches viewport bounds
-            const fitScale = Math.min(scaleByWidth, scaleByHeight);
-            const nextScale = isBookFullscreen ? fitScale : Math.min(1, fitScale);
-            setBookScale(Math.max(0.45, nextScale));
-        };
+        const landscapeWidth = rotateForPortrait ? viewportHeight : viewportWidth;
+        const landscapeHeight = rotateForPortrait ? viewportWidth : viewportHeight;
+        const spreadWidth = BOOK_PAGE_WIDTH * 2;
 
-        calculateBookScale();
-        window.addEventListener("resize", calculateBookScale);
-        return () => window.removeEventListener("resize", calculateBookScale);
-    }, [currentScene?.audio_url, isMobileDevice, isBookFullscreen]);
+        // 작은 기기(md 이하)에서는 가로 여백을 거의 빼지 않아서 책을 더 크게 보이게 함
+        const horizontalMargin = isBookFullscreen ? 8 : forceLandscapeOnMd ? 8 : 80;
+        let availableWidth = Math.max(320, landscapeWidth - horizontalMargin);
+        let availableHeight = Math.max(
+            220,
+            landscapeHeight -
+                (isBookFullscreen
+                    ? 8
+                    : forceLandscapeOnMd
+                    ? 16
+                    : currentScene?.audio_url
+                    ? 320
+                    : 260)
+        );
+
+        const fitScale = Math.min(availableWidth / spreadWidth, availableHeight / BOOK_PAGE_HEIGHT);
+        const nextScale = isBookFullscreen ? fitScale : forceLandscapeOnMd ? fitScale : Math.min(1, fitScale);
+
+        setBookScale(Math.max(0.3, nextScale));
+    }, [
+        viewportWidth,
+        viewportHeight,
+        rotateForPortrait,
+        forceLandscapeOnMd,
+        isBookFullscreen,
+        currentScene?.audio_url,
+    ]);
+    // For mobile layered layout, keep the book visually centered in the viewport
+    useEffect(() => {
+        if (!useMobileLayeredLayout) return;
+        const container = mobileScrollRef.current;
+        const bookEl = mobileBookRef.current;
+        if (!container || !bookEl) return;
+
+        const containerRect = container.getBoundingClientRect();
+        const bookRect = bookEl.getBoundingClientRect();
+
+        const currentScrollTop = container.scrollTop;
+        const containerCenter = containerRect.height / 2;
+        const bookCenterOffset = bookRect.top - containerRect.top + bookRect.height / 2;
+        const targetScrollTop = currentScrollTop + (bookCenterOffset - containerCenter);
+
+        container.scrollTo({ top: targetScrollTop, behavior: "auto" });
+    }, [useMobileLayeredLayout, viewportWidth, viewportHeight, bookScale, isBookFullscreen]);
 
     // Reset quiz timing state when scene changes
     useEffect(() => {
@@ -239,7 +270,7 @@ export default function StoryPage({
     if (loading || !story || !currentScene) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-bounce text-4xl">📚</div>
+                <div className="animate-bounce text-3xl md:text-4xl">📚</div>
             </div>
         );
     }
@@ -284,6 +315,144 @@ export default function StoryPage({
     const handleBackToMap = () => {
         router.push("/stage-select");
     };
+
+    const titleBlock = (
+        <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center w-full max-w-2xl"
+        >
+            <div className="glass-card py-3 px-8 rounded-full inline-block backdrop-blur-md bg-white/30 border border-white/40 shadow-sm">
+                <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800">{story.title}</h1>
+            </div>
+        </motion.div>
+    );
+
+    const bookBlock = (
+        <div
+            ref={bookFullscreenRef}
+            className={`relative ${
+                isBookFullscreen
+                    ? rotateForPortrait
+                        ? "fixed inset-0 w-[100vh] h-[100vw] rotate-90 origin-top-left translate-x-[100vw] z-[70] bg-black p-1 md:p-2 flex items-center justify-center"
+                        : "fixed inset-0 z-[70] bg-black p-1 md:p-2 flex items-center justify-center"
+                    : ""
+            }`}
+        >
+            <div className="relative shadow-2xl rounded-lg overflow-hidden border-2 border-white/20">
+                <PageFlipBook
+                    key={pageFlipRenderKey}
+                    ref={bookRef}
+                    onPageChange={(pageIndex) => {
+                        // Each scene has 2 pages, so divide by 2 to get scene index
+                        const sceneIndex = Math.floor(pageIndex / 2);
+                        setCurrentSceneIndex(sceneIndex);
+                        setCurrentPageIndex(pageIndex);
+                    }}
+                    width={scaledPageWidth}
+                    height={scaledPageHeight}
+                    usePortrait={false}
+                    startPage={currentPageIndex}
+                >
+                    {story.scenes.flatMap((scene: any, sceneIndex: number) => {
+                        const [leftText, rightText] = splitTextIntoHalves(scene.text);
+
+                        return [
+                            // Left Page - Left half of image with text
+                            <Page key={`scene-${sceneIndex}-left`} className="relative overflow-hidden bg-white">
+                                <div className="h-full w-full flex flex-col">
+
+                                    {/* Left half of image - fills entire page */}
+                                    {scene.image_url && (
+                                        <div className="flex-1 relative overflow-hidden">
+                                            <div
+                                                className="absolute inset-0 bg-cover bg-center"
+                                                style={{
+                                                    backgroundImage: `url(${scene.image_url})`,
+                                                    backgroundPosition: 'left center',
+                                                    backgroundSize: '200% auto',
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Text at bottom - First Half */}
+                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-6 pt-12 min-h-[160px] flex items-end justify-center">
+                                        <p className="text-white text-base md:text-lg leading-relaxed text-center font-medium drop-shadow-md pb-4 font-sans">
+                                            {leftText}
+                                        </p>
+                                    </div>
+                                </div>
+                                {/* Paper texture overlay (subtle) */}
+                                <div className="absolute inset-0 bg-yellow-50 opacity-10 pointer-events-none mix-blend-multiply"></div>
+                                <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-black/10 to-transparent pointer-events-none"></div>
+                            </Page>,
+
+                            // Right Page - Right half of image with text (Audio removed from here)
+                            <Page key={`scene-${sceneIndex}-right`} className="relative overflow-hidden bg-white">
+                                <div className="h-full w-full flex flex-col">
+                                    {/* Right half of image - fills entire page */}
+                                    {scene.image_url && (
+                                        <div className="flex-1 relative overflow-hidden">
+                                            <div
+                                                className="absolute inset-0 bg-cover bg-center"
+                                                style={{
+                                                    backgroundImage: `url(${scene.image_url})`,
+                                                    backgroundPosition: 'right center',
+                                                    backgroundSize: '200% auto',
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Text at bottom - Second Half */}
+                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-6 pt-12 min-h-[160px] flex items-end justify-center">
+                                        <p className="text-white text-base md:text-lg leading-relaxed text-center font-medium drop-shadow-md pb-4 font-sans">
+                                            {rightText}
+                                        </p>
+                                    </div>
+
+                                    {/* Scene Number - Bottom Right */}
+                                    <div className="absolute bottom-4 right-4 z-20 text-xs font-bold text-white/80 bg-black/20 backdrop-blur-sm px-2 py-0.5 rounded-md border border-white/10">
+                                        {sceneIndex + 1} / {story.scenes.length}
+                                    </div>
+                                </div>
+                                {/* Paper texture and spine shadow */}
+                                <div className="absolute inset-0 bg-yellow-50 opacity-10 pointer-events-none mix-blend-multiply"></div>
+                                <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-black/10 to-transparent pointer-events-none"></div>
+                            </Page>
+                        ]
+                    })}
+                </PageFlipBook>
+            </div>
+
+            <FullscreenToggle
+                targetRef={bookFullscreenRef}
+                className="fixed bottom-6 right-6 z-[90]"
+            />
+
+            {currentScene.quiz && (
+                <QuizModal
+                    quiz={currentScene.quiz}
+                    isOpen={showQuiz}
+                    onComplete={handleQuizComplete}
+                />
+            )}
+        </div>
+    );
+
+    const audioBlock = currentScene.audio_url ? (
+        <div className="w-full max-w-md">
+            <div className="glass-card p-2 rounded-2xl bg-white/50 backdrop-blur-md border border-white/50 shadow-sm">
+                <AudioPlayer
+                    audioUrl={currentScene.audio_url}
+                    autoPlay={true}
+                    autoPlayToken={`scene-${currentSceneIndex}-fs-${fullscreenReplayToken}`}
+                    onEnded={() => setIsNarrationDone(true)}
+                />
+            </div>
+        </div>
+    ) : null;
 
     if (showStageClear) {
         return (
@@ -373,9 +542,10 @@ export default function StoryPage({
     }
 
     return (
-        <div className={`min-h-screen flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden transition-all duration-300
-            ${isMobilePortrait ? 'fixed inset-0 w-[100vh] h-[100vw] rotate-90 origin-top-left translate-x-[100vw] z-50 m-0 p-0 overflow-hidden' : ''}
-            ${!isMobilePortrait && isMobileDevice ? 'fixed inset-0 z-50 m-0 p-0 overflow-hidden' : ''}
+        <div className={`min-h-screen flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300
+            ${forceLandscapeOnMd ? 'p-0 m-0' : 'p-4 md:p-8'}
+            ${rotateForPortrait ? 'fixed inset-0 w-[100vh] h-[100vw] rotate-90 origin-top-left translate-x-[100vw] z-50 overflow-hidden' : ''}
+            ${forceLandscapeOnMd && !rotateForPortrait ? 'fixed inset-0 z-50 overflow-hidden' : ''}
         `}>
             {/* Background Decoration */}
             <div className="absolute inset-0 pointer-events-none">
@@ -390,148 +560,37 @@ export default function StoryPage({
                 </motion.div>
             </div>
 
-            <div
-                className={`w-full max-w-[1920px] px-2 relative z-10 flex flex-col items-center ${isMobileDevice ? 'h-full justify-center' : ''}`}
-            >
-                {/* Story Title */}
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`${isMobileDevice ? "fixed top-2 left-1/2 -translate-x-1/2 z-30 text-center w-full max-w-2xl mb-0" : "text-center mb-8 w-full max-w-2xl"}`}
-                >
-                    <div className="glass-card py-3 px-8 rounded-full inline-block backdrop-blur-md bg-white/30 border border-white/40 shadow-sm">
-                        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800">{story.title}</h1>
-                    </div>
-                </motion.div>
-
-                {/* Story Content with Page Flip */}
+            {useMobileLayeredLayout ? (
                 <div
-                    ref={bookFullscreenRef}
-                    className={`relative ${isMobileDevice ? "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20" : ""} ${isBookFullscreen ? "fixed inset-0 z-[70] bg-black/20 p-1 md:p-2 flex items-center justify-center" : ""}`}
+                    ref={mobileScrollRef}
+                    className="w-full h-screen overflow-y-auto relative z-10 flex flex-col items-center"
                 >
-                    <div
-                        style={isMobileDevice && !isBookFullscreen ? { transform: `scale(${mobileScale})`, transformOrigin: "center center" } : {}}
-                    >
-                        <div className="relative shadow-2xl rounded-lg overflow-hidden border-2 border-white/20">
-                            <PageFlipBook
-                                key={pageFlipRenderKey}
-                                ref={bookRef}
-                                onPageChange={(pageIndex) => {
-                                    // Each scene has 2 pages, so divide by 2 to get scene index
-                                    const sceneIndex = Math.floor(pageIndex / 2);
-                                    setCurrentSceneIndex(sceneIndex);
-                                    setCurrentPageIndex(pageIndex);
-                                }}
-                                width={scaledPageWidth}
-                                height={scaledPageHeight}
-                                usePortrait={false}
-                                startPage={currentPageIndex}
-                            >
-                                {story.scenes.flatMap((scene: any, sceneIndex: number) => {
-                                    const [leftText, rightText] = splitTextIntoHalves(scene.text);
-
-                                    return [
-                                        // Left Page - Left half of image with text
-                                        <Page key={`scene-${sceneIndex}-left`} className="relative overflow-hidden bg-white">
-                                            <div className="h-full w-full flex flex-col">
-
-                                            {/* Left half of image - fills entire page */}
-                                            {scene.image_url && (
-                                                <div className="flex-1 relative overflow-hidden">
-                                                    <div
-                                                        className="absolute inset-0 bg-cover bg-center"
-                                                        style={{
-                                                            backgroundImage: `url(${scene.image_url})`,
-                                                            backgroundPosition: 'left center',
-                                                            backgroundSize: '200% auto',
-                                                        }}
-                                                    />
-                                                </div>
-                                            )}
-
-                                            {/* Text at bottom - First Half */}
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-6 pt-12 min-h-[160px] flex items-end justify-center">
-                                                <p className="text-white text-base md:text-lg leading-relaxed text-center font-medium drop-shadow-md pb-4 font-sans">
-                                                    {leftText}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        {/* Paper texture overlay (subtle) */}
-                                        <div className="absolute inset-0 bg-yellow-50 opacity-10 pointer-events-none mix-blend-multiply"></div>
-                                        <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-black/10 to-transparent pointer-events-none"></div>
-                                    </Page>,
-
-                                    // Right Page - Right half of image with text (Audio removed from here)
-                                    <Page key={`scene-${sceneIndex}-right`} className="relative overflow-hidden bg-white">
-                                        <div className="h-full w-full flex flex-col">
-                                            {/* Right half of image - fills entire page */}
-                                            {scene.image_url && (
-                                                <div className="flex-1 relative overflow-hidden">
-                                                    <div
-                                                        className="absolute inset-0 bg-cover bg-center"
-                                                        style={{
-                                                            backgroundImage: `url(${scene.image_url})`,
-                                                            backgroundPosition: 'right center',
-                                                            backgroundSize: '200% auto',
-                                                        }}
-                                                    />
-                                                </div>
-                                            )}
-
-                                            {/* Text at bottom - Second Half */}
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-6 pt-12 min-h-[160px] flex items-end justify-center">
-                                                <p className="text-white text-base md:text-lg leading-relaxed text-center font-medium drop-shadow-md pb-4 font-sans">
-                                                    {rightText}
-                                                </p>
-                                            </div>
-
-                                            {/* Scene Number - Bottom Right */}
-                                            <div className="absolute bottom-4 right-4 z-20 text-xs font-bold text-white/80 bg-black/20 backdrop-blur-sm px-2 py-0.5 rounded-md border border-white/10">
-                                                {sceneIndex + 1} / {story.scenes.length}
-                                            </div>
-                                        </div>
-                                        {/* Paper texture and spine shadow */}
-                                        <div className="absolute inset-0 bg-yellow-50 opacity-10 pointer-events-none mix-blend-multiply"></div>
-                                        <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-black/10 to-transparent pointer-events-none"></div>
-                                        </Page>
-                                    ]
-                                })}
-                            </PageFlipBook>
+                    <div className="flex flex-col items-center w-full px-4 py-4 space-y-2">
+                        <div className="w-full flex justify-center">{titleBlock}</div>
+                        <div
+                            ref={mobileBookRef}
+                            className="w-full flex justify-center items-center py-4"
+                            style={{
+                                transform: `scale(${bookScale})`,
+                                transformOrigin: "center center",
+                            }}
+                        >
+                            {bookBlock}
                         </div>
+                        {audioBlock && (
+                            <div className="w-full max-w-md flex justify-center pb-2">
+                                {audioBlock}
+                            </div>
+                        )}
                     </div>
-
-                    <FullscreenToggle
-                        targetRef={bookFullscreenRef}
-                        className="fixed bottom-6 right-6 z-[90]"
-                    />
-
-                    {currentScene.quiz && (
-                        <QuizModal
-                            quiz={currentScene.quiz}
-                            isOpen={showQuiz}
-                            onComplete={handleQuizComplete}
-                        />
-                    )}
                 </div>
-
-
-                {/* Audio Player - Positioned under RIGHT page frame, Wide and Right Aligned */}
-                {currentScene.audio_url && (
-                    <div className={`${isMobileDevice ? "fixed bottom-3 left-1/2 -translate-x-1/2 z-30 w-[min(92vw,24rem)]" : "mt-8 w-full max-w-md"}`}>
-                        <div className="glass-card p-2 rounded-2xl bg-white/50 backdrop-blur-md border border-white/50 shadow-sm">
-                            <AudioPlayer
-                                audioUrl={currentScene.audio_url}
-                                autoPlay={true}
-                                autoPlayToken={`scene-${currentSceneIndex}-fs-${fullscreenReplayToken}`}
-                                onEnded={() => setIsNarrationDone(true)}
-                            />
-                        </div>
-                    </div>
-                )}
-
-
-                {/* Navigation removed - use page clicks to navigate */}
-            </div>
+            ) : (
+                <div className="w-full max-w-[1920px] px-2 relative z-10 flex flex-col items-center">
+                    <div className="mb-8">{titleBlock}</div>
+                    {bookBlock}
+                    {audioBlock && <div className="mt-8 w-full max-w-md">{audioBlock}</div>}
+                </div>
+            )}
         </div >
     );
 }

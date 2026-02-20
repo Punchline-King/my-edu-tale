@@ -11,7 +11,6 @@ interface FullscreenToggleProps {
 
 export function FullscreenToggle({ targetRef, className = "fixed bottom-6 right-6 z-30" }: FullscreenToggleProps) {
     const [isFullscreen, setIsFullscreen] = useState(false);
-    const isSupported = typeof document === "undefined" ? true : document.fullscreenEnabled;
 
     useEffect(() => {
         // Listen for fullscreen changes
@@ -23,7 +22,9 @@ export function FullscreenToggle({ targetRef, className = "fixed bottom-6 right-
             }
 
             if (targetRef?.current) {
-                setIsFullscreen(fullscreenEl === targetRef.current);
+                setIsFullscreen(
+                    fullscreenEl === targetRef.current || fullscreenEl === document.documentElement
+                );
                 return;
             }
 
@@ -40,7 +41,12 @@ export function FullscreenToggle({ targetRef, className = "fixed bottom-6 right-
         try {
             if (!document.fullscreenElement) {
                 const target = targetRef?.current ?? document.documentElement;
-                await target.requestFullscreen();
+                try {
+                    await target.requestFullscreen();
+                } catch {
+                    // Fallback for environments where target element fullscreen fails
+                    await document.documentElement.requestFullscreen();
+                }
             } else {
                 await document.exitFullscreen();
             }
@@ -51,10 +57,6 @@ export function FullscreenToggle({ targetRef, className = "fixed bottom-6 right-
             );
         }
     };
-
-    if (!isSupported) {
-        return null;
-    }
 
     return (
         <div className={className}>

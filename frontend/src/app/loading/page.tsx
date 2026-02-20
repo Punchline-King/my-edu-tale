@@ -127,7 +127,7 @@ export default function LoadingPage() {
                     {/* Inner Rotating Tools Layer */}
                     <div className="relative size-full flex items-center justify-center animate-float">
                         {/* Art Tool 1: Pencils (Top Left) - Rounded Square */}
-                        <div className="absolute -top-4 -left-10 size-32 bg-pastel-peach rounded-2xl rotate-[-15deg] shadow-xl flex items-center justify-center border-4 border-white transform transition-transform hover:scale-105">
+                        <div className="absolute -top-4 -left-10 size-28 md:size-32 bg-pastel-peach rounded-2xl rotate-[-15deg] shadow-xl flex items-center justify-center border-4 border-white transform transition-transform hover:scale-105">
                             <Edit size={48} className="text-orange-400/80" />
                         </div>
 
@@ -146,7 +146,7 @@ export default function LoadingPage() {
                         </div>
 
                         {/* Art Tool 3: Palette (Bottom Right) - Rounded Squircle */}
-                        <div className="absolute -bottom-6 -right-6 size-32 bg-pastel-purple rounded-3xl rotate-[20deg] shadow-xl flex items-center justify-center border-4 border-white transform transition-transform hover:scale-105">
+                        <div className="absolute -bottom-6 -right-6 size-28 md:size-32 bg-pastel-purple rounded-3xl rotate-[20deg] shadow-xl flex items-center justify-center border-4 border-white transform transition-transform hover:scale-105">
                             <Palette size={48} className="text-purple-500/80" />
                         </div>
 
