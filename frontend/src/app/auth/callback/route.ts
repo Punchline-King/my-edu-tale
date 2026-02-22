@@ -42,8 +42,8 @@ export async function GET(request: NextRequest) {
                     .eq('id', session.user.id)
                     .single();
 
-                if (profile && !profileError) {
-                    // Profile found -> Send to stage selection
+                if (profile && !profileError && profile.child_name) {
+                    // Profile found and completed -> Send to stage selection
                     console.log('Existing user profile found. Redirecting to stage-select.');
                     return NextResponse.redirect(new URL('/stage-select', requestUrl.origin));
                 }

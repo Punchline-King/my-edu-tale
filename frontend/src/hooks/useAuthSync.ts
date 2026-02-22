@@ -28,7 +28,7 @@ export function useAuthSync() {
 
                         // Fetch child profile from DB
                         const profile = await fetchUserProfile(session.user.id);
-                        if (profile) {
+                        if (profile && profile.child_name) {
                             setChildInfo(profile);
                         } else {
                             // If no profile exists, we don't necessarily clear it if we're on the child-info page
@@ -56,7 +56,7 @@ export function useAuthSync() {
                     name: session.user.user_metadata?.name ?? session.user.email ?? "",
                 });
                 const profile = await fetchUserProfile(session.user.id);
-                if (profile) setChildInfo(profile);
+                if (profile && profile.child_name) setChildInfo(profile);
             }
         };
 

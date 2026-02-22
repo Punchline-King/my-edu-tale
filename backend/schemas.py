@@ -34,4 +34,10 @@ class SceneSchema(BaseModel):
 class StoryDraft(BaseModel):
     title: str = Field(description="동화책의 지어낸 제목")
     summary: str = Field(description="전체 이야기 요약")
+    
+    # --- [New] 일관성 있는 생성을 위한 전역 설정 필드 (영어) ---
+    style_guide: str = Field(description="동화책 전체에 적용될 예술적 스타일 가이드 (반드시 영어로 작성). 예: Watercolor style, soft pastel colors...")
+    character_bible: str = Field(description="주인공 캐릭터의 고정된 외모 특징 (반드시 영어로 작성). 예: Little boy with messy brown hair, wearing a green hoodie...")
+    anchor_prompt: str = Field(description="주인공의 전신 모습이 담긴 캐릭터 시트를 생성하기 위한 프롬프트 (반드시 영어로 작성)")
+    
     scenes: List[SceneSchema] = Field(description="반드시 5개의 장면을 생성할 것")
