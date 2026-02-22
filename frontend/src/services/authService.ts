@@ -74,7 +74,8 @@ async function supabaseSignIn(): Promise<MockUser> {
     // OAuth redirect will happen automatically
     // This function won't return in normal flow
     // User will be redirected to Google and back to /auth/callback
-    throw new Error('OAuth redirect should have occurred');
+    await new Promise(() => {});
+    return null as any;
 }
 
 /**
