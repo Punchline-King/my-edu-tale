@@ -130,7 +130,7 @@ Open: `http://localhost:3000`
 
 ## Documentation Map
 
-- `/Users/sungmin/Desktop/Project/EduTale/README.md` - Product overview and quick start
-- `/Users/sungmin/Desktop/Project/EduTale/frontend/README.md` - Frontend development guide
-- `/Users/sungmin/Desktop/Project/EduTale/backend/README.md` - Backend API and operations guide
-- `/Users/sungmin/Desktop/Project/EduTale/backend/BackEnd.md` - Detailed backend design notes
+- `README.md` - Product overview and quick start
+- `frontend/README.md` - Frontend development guide
+- `backend/README.md` - Backend API and operations guide
+- `backend/BackEnd.md` - Detailed backend design notes
