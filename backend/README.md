@@ -1,47 +1,86 @@
 # EduTale Backend
 
-EduTale의 동화 생성 API 서버입니다. 사용자 입력(아이 정보/감정/진도 코드)을 받아 OpenAI와 Supabase를 연동해 동화 데이터를 생성하고 저장합니다.
+**EduTale Backend** is the API orchestration layer that generates personalized stories and media assets using OpenAI services and stores final outputs in Supabase.
 
-## 기술 스택
+It receives child context and curriculum stage input, builds structured story output, and returns scene-level content consumable by the frontend.
 
-- Python 3.10+
-- FastAPI + Uvicorn
-- Pydantic
-- OpenAI Python SDK
-- Supabase Python SDK
-- HTTPX
+## Executive Summary
 
-## 주요 기능
+The backend is implemented as a FastAPI service with a clear split between API routing, AI generation services, and data/storage services.
+It manages story generation lifecycle end-to-end: curriculum lookup, narrative generation, media generation, persistence, and retrieval.
+
+## Portfolio Value
+
+This backend demonstrates production-relevant backend capabilities in:
+
+- API orchestration for AI-driven content pipelines
+- Structured schema validation with Pydantic
+- Async workflows for parallel media generation
+- External service integration (OpenAI + Supabase)
+- Clear service-layer decomposition (`main`, `ai_service`, `db_service`)
+
+## Core Responsibilities
 
 - `POST /generate`
-  - 커리큘럼 조회
-  - GPT 기반 동화/퀴즈 생성
-  - 이미지(T2I), 오디오(TTS) 생성
-  - Supabase Storage 업로드 및 DB 저장
+  - Load curriculum by stage code
+  - Generate structured story and quiz content
+  - Generate image/audio media
+  - Upload assets and persist final story payload
 - `GET /curriculums`
-  - 진도 선택용 커리큘럼 목록 조회
+  - Return curriculum metadata for stage selection
 - `GET /stories/{story_id}`
-  - 생성된 동화 상세 조회
+  - Return stored story details
 
-## 프로젝트 구조
+## Tech Stack
+
+| Area | Technologies |
+| --- | --- |
+| Framework | FastAPI, Uvicorn |
+| Language | Python 3.10+ |
+| Validation | Pydantic |
+| AI Integration | OpenAI Python SDK |
+| Data/Storage | Supabase Python SDK |
+| Networking | HTTPX |
+
+## Service Structure
 
 ```text
 backend/
-├─ main.py          # FastAPI 엔트리포인트, 라우팅/오케스트레이션
-├─ ai_service.py    # OpenAI 호출 (대본/이미지/오디오)
-├─ db_service.py    # Supabase DB/Storage 연동
-├─ schemas.py       # 요청/응답 데이터 스키마
-├─ README.md        # 실행/운영 가이드
-└─ BackEnd.md       # 상세 설계 설명 문서
+├─ main.py              # API entrypoint and request orchestration
+├─ ai_service.py        # OpenAI story/image/audio generation
+├─ db_service.py        # Supabase DB and storage operations
+├─ schemas.py           # Request/response and story schemas
+├─ README.md            # Backend operations guide
+└─ BackEnd.md           # Detailed architecture notes
 ```
 
-## 사전 준비
+## API Surface
 
-- Python 3.10 이상
-- OpenAI API Key
-- Supabase 프로젝트 (DB + Storage 버킷)
+- `POST /generate`
+- `GET /curriculums`
+- `GET /stories/{story_id}`
 
-## 설치 및 실행
+Local Swagger UI: `http://127.0.0.1:8000/docs`
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.10+
+- OpenAI API key
+- Supabase project with required tables/storage bucket
+
+### 1) Environment Setup
+
+Create `backend/.env`:
+
+```env
+OPENAI_API_KEY=your_openai_api_key
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_API=your_supabase_service_role_or_api_key
+```
+
+### 2) Install and Run
 
 ```bash
 cd backend
@@ -51,44 +90,28 @@ pip install fastapi "uvicorn[standard]" pydantic openai python-dotenv supabase h
 uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-API 문서: `http://127.0.0.1:8000/docs`
-
-## 환경 변수
-
-`backend/.env` 파일을 사용합니다.
-
-| 변수명 | 필수 | 설명 |
-| --- | --- | --- |
-| `OPENAI_API_KEY` | Yes | OpenAI API 키 |
-| `SUPABASE_URL` | Yes | Supabase 프로젝트 URL |
-| `SUPABASE_API` | Yes | Supabase API 키 |
-
-## 요청 예시
+## Request Example
 
 ```bash
 curl -X POST http://127.0.0.1:8000/generate \
   -H "Content-Type: application/json" \
   -d '{
-    "child_name": "민준",
+    "child_name": "Minjun",
     "age": 6,
-    "personality": "호기심 많음",
-    "emotion": "기쁨",
+    "personality": "curious",
+    "emotion": "happy",
     "stage_code": "STAGE_01",
     "user_id": "user-uuid"
   }'
 ```
 
-## 운영 시 주의사항
+## Operational Notes
 
-- 현재 CORS는 `http://localhost:3000`만 허용 (`main.py`)
-- 프로덕션에서는 환경별 도메인 분리 및 allowlist 최소화 필요
-- 키 관리: `.env` 대신 시크릿 매니저 사용 권장
-- 비동기 생성 실패 시 재시도/서킷브레이커 정책 추가 권장
+- CORS is currently configured for local frontend development (`http://localhost:3000`).
+- Production deployments should enforce strict origin allowlists and secure key management.
+- Add dependency locking (`requirements.txt` or `pyproject.toml`) for reproducible builds.
+- Add health checks, retry policies, and monitoring for production reliability.
 
-## 향후 개선 권장
+## Related Docs
 
-- `requirements.txt` 또는 `pyproject.toml`로 의존성 고정
-- 헬스체크 엔드포인트(`/health`) 추가
-- 테스트 코드(`pytest`) 및 CI 파이프라인 구축
-
-상세 설계/데이터 흐름 문서는 `backend/BackEnd.md`를 참고하세요.
+- `backend/BackEnd.md` provides detailed internal data flow and module-level explanations.
